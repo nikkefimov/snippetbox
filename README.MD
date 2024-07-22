@@ -1,1 +1,1 @@
-Go education project
+Go education project, use "go run ./cmd/web" in terminal for run app

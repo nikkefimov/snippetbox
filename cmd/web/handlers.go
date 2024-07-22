@@ -3,12 +3,11 @@ package main
 import (
 	"fmt"
 	"html/template"
-	"log"
 	"net/http"
 	"strconv"
 )
 
-func home(w http.ResponseWriter, r *http.Request) {
+func (app *application) home(w http.ResponseWriter, r *http.Request) {
 
 	if r.URL.Path != "/" {
 		http.NotFound(w, r)
@@ -22,16 +21,16 @@ func home(w http.ResponseWriter, r *http.Request) {
 		"./ui/html/footer.partial.tmpl",
 	}
 
-	ts, err := template.ParseFiles(files...) //using func template.ParseFiles() for read our template
-	if err != nil {                          //if error we write specify msg about error and use func http.Error() for send this info to user
-		log.Println(err.Error())
+	ts, err := template.ParseFiles(files...) // using func template.ParseFiles() for read our template
+	if err != nil {                          // if error we write specify msg about error and use func http.Error() for send this info to user
+		app.errorLog.Println(err.Error())           // updated, because using new logger instead standart GO logger
 		http.Error(w, "Internal Server Error", 500) //msg about server error(inside)
 		return
 	}
 
 	err = ts.Execute(w, nil) //we use func Execute() for write template's content in body of http response. Last parameter in Execute func needs for send dynamic data in template
 	if err != nil {
-		log.Println(err.Error())
+		app.errorLog.Println(err.Error()) // updated, because using new 'application' struct
 		http.Error(w, "Internal Server Error", 500)
 	}
 
@@ -40,7 +39,7 @@ func home(w http.ResponseWriter, r *http.Request) {
 
 // main page
 
-func showSnippet(w http.ResponseWriter, r *http.Request) {
+func (app *application) showSnippet(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(r.URL.Query().Get("id"))
 	if err != nil || id < 1 {
 		http.NotFound(w, r)
@@ -52,7 +51,7 @@ func showSnippet(w http.ResponseWriter, r *http.Request) {
 
 // display notes
 
-func createSnippet(w http.ResponseWriter, r *http.Request) {
+func (app *application) createSnippet(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		w.Header().Set("Allow", http.MethodPost) //use method Header().Set() for add header 'Allow: POST' in map of http-headers, first parameter name of header, second value of header
 		//w.WriteHeader(405)                       // we can call in handler only one time, for second time GO will give error for us. We have to call writeheader once before write for another status(instead 200 OK)

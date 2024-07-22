@@ -8,6 +8,14 @@ import (
 	"path/filepath"
 )
 
+type application struct {
+	errorLog *log.Logger
+	infoLog  *log.Logger
+}
+
+// creating struct 'application' for storing the dependencies of app
+// for now add fields for two loggers
+
 func main() {
 
 	//creating new flag CLI, by default ":4000"
@@ -27,21 +35,29 @@ func main() {
 	//using flag log.Lshortfile for log
 	//file name and string number where errors was found
 	errorLog := log.New(os.Stderr, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
+	// log.New() is safe for concurency using, we can share one logger for several Goroutines
+	//if we have several loggers and we use only one place for writing we have to be sure that method Write() also is safe for concurency using
+
+	app := &application{ // initiate a new structure with dependency injection
+		errorLog: errorLog,
+		infoLog:  infoLog,
+	}
 
 	mux := http.NewServeMux()
-	mux.HandleFunc("/", home)
-	mux.HandleFunc("/snippet", showSnippet)
-	mux.HandleFunc("/snippet/create", createSnippet)
+	mux.HandleFunc("/", app.home)                        //updated, using methods from structure for handler routs
+	mux.HandleFunc("/snippet", app.showSnippet)          //updated, using methods from structure for handler routs
+	mux.HandleFunc("/snippet/create", app.createSnippet) //updated, using methods from structure for handler routs
 
 	fileServer := http.FileServer(neuteredFileSystem{http.Dir("./ui/static/")}) //use FileServer for processing http requests for static files from folder ./ui/static. http.Dir its root project folder
 	mux.Handle("/static", http.NotFoundHandler())
 	mux.Handle("/static/", http.StripPrefix("/static", fileServer))
 
-	srv := &http.Server{ // struct with server information and for new logger
+	srv := &http.Server{ // struct with server information and for new logger.
 		Addr:     *addr,
 		ErrorLog: errorLog,
 		Handler:  mux,
 	}
+	// In 'srv' struct were created 'Addr' and 'Handler' for the same network address and routs as was earlier and field ErrorLog for using logger by our server
 
 	infoLog.Printf("Launching server on %s", *addr)
 	// old logger "err := http.ListenAndServe(*addr, mux)"
@@ -73,4 +89,5 @@ func (nfs neuteredFileSystem) Open(path string) (http.File, error) {
 	}
 
 	return f, nil
+
 }
