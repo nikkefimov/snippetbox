@@ -14,3 +14,7 @@ Information about constants: "pkg.go.dev/net/http#pkg-constants"
 23.07 fix msg from helpers.go, fix serverError() use Output(), depth is 2 by default
 
 now have information about exact string in code in whole project with a problem, before had just information about string in helpers.go which says about problem is
+
+23.07 correction of a specially made error earlier in type of file for the logger test and errors
+
+mv ui/html/home.page.bak ui/html/home.page.tmpl. Tested - OK
