@@ -10,3 +10,7 @@ made mistake in file type "./ui/html/home.page.tmpl:" "changed to .bak" for test
 in handler serverError() was used func debug.Stack() for get trace from stack fo current goroutine and add it in logger,
 its good in a future work because there is full route and easy for fixing. In helper clientError() was used func http.StatusText() for automatic text generation about status HTTP, like a "Bad request". Was used special constants from net/http for code about status HTTP instead number msgs. In helper serverError() was used constant http.StatusInternalServerError instead 500, in helper notFound() was used constant http.StatusNotFound instead 404.
 Information about constants: "pkg.go.dev/net/http#pkg-constants"
+
+23.07 fix msg from helpers.go, fix serverError() use Output(), depth is 2 by default
+
+now have information about exact string in code in whole project with a problem, before had just information about string in helpers.go which says about problem is
