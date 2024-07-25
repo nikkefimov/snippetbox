@@ -43,19 +43,23 @@ func main() {
 		infoLog:  infoLog,
 	}
 
-	mux := http.NewServeMux()
+	//move this part of code to new file routes.go //
+	////////////////////////////////////////////////
+
+	/*mux := http.NewServeMux()
 	mux.HandleFunc("/", app.home)                        //updated, using methods from structure for handler routs
 	mux.HandleFunc("/snippet", app.showSnippet)          //updated, using methods from structure for handler routs
 	mux.HandleFunc("/snippet/create", app.createSnippet) //updated, using methods from structure for handler routs
 
 	fileServer := http.FileServer(neuteredFileSystem{http.Dir("./ui/static/")}) //use FileServer for processing http requests for static files from folder ./ui/static. http.Dir its root project folder
 	mux.Handle("/static", http.NotFoundHandler())
-	mux.Handle("/static/", http.StripPrefix("/static", fileServer))
+	mux.Handle("/static/", http.StripPrefix("/static", fileServer))*/
+	/////////////////////////////////////////////////
 
 	srv := &http.Server{ // struct with server information and for new logger.
 		Addr:     *addr,
 		ErrorLog: errorLog,
-		Handler:  mux,
+		Handler:  app.routes(), //call new method app.routes() in file routes.go
 	}
 	// In 'srv' struct were created 'Addr' and 'Handler' for the same network address and routs as was earlier and field ErrorLog for using logger by our server
 

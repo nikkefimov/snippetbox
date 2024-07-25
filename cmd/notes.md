@@ -18,3 +18,7 @@ now have information about exact string in code in whole project with a problem,
 23.07 correction of a specially made error earlier in type of file for the logger test and errors
 
 mv ui/html/home.page.bak ui/html/home.page.tmpl. Tested - OK
+
+25.07 create new file routes.go and new method, move this part with routes from main.go
+
+after small refactoring updated file main.go is doing: parsing runtime configuration settings for an application, making dependencies for handlers, starting http server.
