@@ -22,3 +22,5 @@ mv ui/html/home.page.bak ui/html/home.page.tmpl. Tested - OK
 25.07 create new file routes.go and new method, move this part with routes from main.go
 
 after small refactoring updated file main.go is doing: parsing runtime configuration settings for an application, making dependencies for handlers, starting http server.
+
+30.07 install homebrew in terminal, install Java JDK, install MySQL in terminal, launch MySQL trough brew
