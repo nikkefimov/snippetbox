@@ -1,11 +1,14 @@
 package main
 
 import (
+	"database/sql"
 	"flag"
 	"log"
 	"net/http"
 	"os"
 	"path/filepath"
+
+	_ "github.com/go-sql-driver/mysql"
 )
 
 type application struct {
@@ -23,6 +26,7 @@ func main() {
 	//value of flag will save in addr variable
 
 	addr := flag.String("addr", ":4000", "network adress HTTP")
+	dsn := flag.String("dsn", "web:pass@/snippetbox?parseTime=true", "Name of MySQL datasource")
 	flag.Parse()
 
 	//we call function flag.Parse() for extract flag from CLI
@@ -37,6 +41,14 @@ func main() {
 	errorLog := log.New(os.Stderr, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
 	// log.New() is safe for concurency using, we can share one logger for several Goroutines
 	//if we have several loggers and we use only one place for writing we have to be sure that method Write() also is safe for concurency using
+
+	/// MySQL ///
+	db, err := openDB(*dsn) // creating connections code in func openDB(), we re feeding in func datasource (DSN) from flag cli
+	if err != nil {
+		errorLog.Fatal(err)
+	}
+	defer db.Close() // used for closing pool of connections before the func main() is closed
+	/// MySQL ///
 
 	app := &application{ // initiate a new structure with dependency injection
 		errorLog: errorLog,
@@ -65,7 +77,7 @@ func main() {
 
 	infoLog.Printf("Launching server on %s", *addr)
 	// old logger "err := http.ListenAndServe(*addr, mux)"
-	err := srv.ListenAndServe() // new logger with new struct
+	err = srv.ListenAndServe() // new logger with new struct, updated when MySQL was created
 	errorLog.Fatal(err)
 	//we can redirect msg from terminal to log txt file on HDD with "go run ./cmd/web >>/tmp/info.log 2>>/tmp/error.log"
 }
@@ -94,4 +106,16 @@ func (nfs neuteredFileSystem) Open(path string) (http.File, error) {
 
 	return f, nil
 
+}
+
+// this func openDB covers sql.Open() and returns pool of connections sql.DB for current string of DSN connection
+func openDB(dsn string) (*sql.DB, error) {
+	db, err := sql.Open("mysql", dsn)
+	if err != nil {
+		return nil, err
+	}
+	if err = db.Ping(); err != nil {
+		return nil, err
+	}
+	return db, nil
 }
