@@ -9,15 +9,19 @@ import (
 	"path/filepath"
 
 	_ "github.com/go-sql-driver/mysql"
+
+	"snippetbox/pkg/models/mysql"
 )
 
 type application struct {
 	errorLog *log.Logger
 	infoLog  *log.Logger
+	snippets *mysql.SnippeModel
 }
 
 // creating struct 'application' for storing the dependencies of app
 // for now add fields for two loggers
+// added field snippets for give access to SnippetModel for handlers
 
 func main() {
 
@@ -53,6 +57,7 @@ func main() {
 	app := &application{ // initiate a new structure with dependency injection
 		errorLog: errorLog,
 		infoLog:  infoLog,
+		snippets: &mysql.SnippeModel{DB: db}, // initialise mysql.SnippetModel and add it in dependencies
 	}
 
 	//move this part of code to new file routes.go //
