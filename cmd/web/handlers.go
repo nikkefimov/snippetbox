@@ -61,7 +61,19 @@ func (app *application) createSnippet(w http.ResponseWriter, r *http.Request) {
 		app.clientError(w, http.StatusMethodNotAllowed) // using clientError() in helpers.go // old code: "http.Error(w, "Method is forbidden!", http.StatusMethodNotAllowed)" //we use func http.Error() for send different statuses
 		return
 	}
+
+	title := "First story"
+	content := "about first story"
+	expires := "7"
+
+	id, err := app.snippets.Insert(title, content, expires) // transfet data in method SnippetModel.Insert(), and taking back ID of the newly created record into the database
+	if err != nil {
+		app.serverError(w, err)
+		return
+	}
+
 	w.Write([]byte("form for creating note..."))
+	http.Redirect(w, r, fmt.Sprintf("/snippet?id=%d", id), http.StatusSeeOther) // redirect user to page with note ID
 }
 
 //use r.Method for check type of request, error only for method GET

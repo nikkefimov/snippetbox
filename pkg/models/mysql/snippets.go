@@ -14,7 +14,18 @@ type SnippeModel struct {
 // define the type which wraps the connection pool
 
 func (m *SnippeModel) Insert(title, content, expires string) (int, error) {
-	return 0, nil
+	stmt := `INSERT INTO snippets (title, content, created, expires)           
+	VALUES(?, ?, UTC_TIMESTAMP(), DATE_ADD(UTC_TIMESTAMP(), INTERVAL ? DAY))` // SQL request, used `` here because request has two strings
+	result, err := m.DB.Exec(stmt, title, content, expires) // used Exec() for making request, first its SQL request and second header of note, body of note and lifetime of note, this method returns sql.Result, which contains data what happened after request
+	if err != nil {
+		return 0, err
+	}
+
+	id, err := result.LastInsertId() // used method LastInsertId() for get last ID of created note from table snippets
+	if err != nil {
+		return 0, err
+	}
+	return int(id), nil // returned ID has tipe 'int64', so here we convert it into tipe 'int'
 }
 
 // method for creating a new note in database

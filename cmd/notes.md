@@ -38,3 +38,17 @@ If someone else need to dowload all the dependencies for the project by running 
 
 Data source name for second parametr in sql.Open() func we can find github.com/go-sql-driver/mysql#dsn-data-source-name.
 File main.go was updated
+
+3.07 creat MySQL model for work with a database in project
+
+create new folder mysql and two new files .go in folder models and mysql
+
+in file models.go we define types of top level data, which our database model will use and return.
+
+file snippets.go contains code for work with notes with MySQL database, assign new type here SnippetModel
+
+7.07 update file snippets.go
+
+edit method SnippetModel.Insert(), create new snippet in table snippets and return new snippet's id
+make SQL request and update code in snippets.go, use interface sql.Result which we get after execution DB.Exec(). 
+We have two methods from sql.Result, LastInsertId() and RowsAffected(), not all driver support these methods, PostgeSQL doesnt work with LastInsertId(), have to check driver's manual before use
