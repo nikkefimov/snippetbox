@@ -52,3 +52,7 @@ file snippets.go contains code for work with notes with MySQL database, assign n
 edit method SnippetModel.Insert(), create new snippet in table snippets and return new snippet's id
 make SQL request and update code in snippets.go, use interface sql.Result which we get after execution DB.Exec(). 
 We have two methods from sql.Result, LastInsertId() and RowsAffected(), not all driver support these methods, PostgeSQL doesnt work with LastInsertId(), have to check driver's manual before use
+
+8.07 output a record from the database by ID from the URL
+
+edit method GET in file snippets.go

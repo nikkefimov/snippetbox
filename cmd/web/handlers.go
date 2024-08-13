@@ -1,10 +1,13 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"html/template"
 	"net/http"
 	"strconv"
+
+	"snippetbox/pkg/models"
 )
 
 func (app *application) home(w http.ResponseWriter, r *http.Request) {
@@ -47,8 +50,17 @@ func (app *application) showSnippet(w http.ResponseWriter, r *http.Request) {
 		app.notFound(w) // old code: "http.NotFound(w, r)", using notFound() in helpers.go
 		return
 	}
-	// it was before changes w.Write([]byte("showing note..."))
-	fmt.Fprintf(w, "Show selected note with ID %d...", id) //as a first parametr we used w, instead io.Writer
+
+	s, err := app.snippets.Get(id) // call method Get from model for get data by snippet's ID, if cant find snippet, than returns answer 404
+	if err != nil {
+		if errors.Is(err, models.ErrNoRecord) {
+			app.notFound(w)
+		} else {
+			app.serverError(w, err)
+		}
+		return
+	}
+	fmt.Fprintf(w, "%v", s) // show all return on the page
 }
 
 // display notes
@@ -63,7 +75,7 @@ func (app *application) createSnippet(w http.ResponseWriter, r *http.Request) {
 	}
 
 	title := "First story"
-	content := "about first story"
+	content := "about first story, first"
 	expires := "7"
 
 	id, err := app.snippets.Insert(title, content, expires) // transfet data in method SnippetModel.Insert(), and taking back ID of the newly created record into the database
@@ -71,8 +83,7 @@ func (app *application) createSnippet(w http.ResponseWriter, r *http.Request) {
 		app.serverError(w, err)
 		return
 	}
-
-	w.Write([]byte("form for creating note..."))
+	//w.Write([]byte("form for creating note..."))
 	http.Redirect(w, r, fmt.Sprintf("/snippet?id=%d", id), http.StatusSeeOther) // redirect user to page with note ID
 }
 

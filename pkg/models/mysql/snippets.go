@@ -2,6 +2,7 @@ package mysql
 
 import (
 	"database/sql"
+	"errors"
 	"snippetbox/pkg/models"
 )
 
@@ -14,7 +15,7 @@ type SnippeModel struct {
 // define the type which wraps the connection pool
 
 func (m *SnippeModel) Insert(title, content, expires string) (int, error) {
-	stmt := `INSERT INTO snippets (title, content, created, expires)           
+	stmt := `INSERT INTO snippets (title, content, created, expires)
 	VALUES(?, ?, UTC_TIMESTAMP(), DATE_ADD(UTC_TIMESTAMP(), INTERVAL ? DAY))` // SQL request, used `` here because request has two strings
 	result, err := m.DB.Exec(stmt, title, content, expires) // used Exec() for making request, first its SQL request and second header of note, body of note and lifetime of note, this method returns sql.Result, which contains data what happened after request
 	if err != nil {
@@ -31,7 +32,22 @@ func (m *SnippeModel) Insert(title, content, expires string) (int, error) {
 // method for creating a new note in database
 
 func (m *SnippeModel) Get(id int) (*models.Snippet, error) {
-	return nil, nil
+	stmt := `SELECT id, title, content, created, expires FROM snippets WHERE expires > UTC_TIMESTAMP() AND id = ?`
+	// SQL request for returning data for one snippet
+	row := m.DB.QueryRow(stmt, id)
+	// used method QueryRow() for SQL request, return pointer to object sql.Row, which contains snippet's data
+
+	s := &models.Snippet{}
+	// initializes pointer for new structure Snippet
+	err := row.Scan(&s.ID, &s.Title, &s.Content, &s.Created, &s.Expires) // uses row.Scan() for copy value from every sql.Row's field in structure Snippet's fields
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) { // error check for fields data, if request has any error and error was detected, than error returns from models.ErrNoRecord
+			return nil, models.ErrNoRecord
+		} else {
+			return nil, err
+		}
+	}
+	return s, nil // if everything is ok, returns object Snippet
 }
 
 // method for returning note's data by note ID
