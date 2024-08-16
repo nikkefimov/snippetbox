@@ -16,6 +16,17 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 		app.notFound(w) // old code "http.NotFound(w, r)", using notFound() in helpers.go
 		return
 	}
+
+	s, err := app.snippets.Latest()
+	if err != nil {
+		app.serverError(w, err)
+		return
+	}
+
+	for _, snippet := range s {
+		fmt.Fprintf(w, "%v\n", snippet)
+	}
+
 	// checking unexist pages
 
 	files := []string{ //creating slice which contains route for two tmpl files, file home.page.tmpl must go first in list
@@ -28,18 +39,12 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 	if err != nil {                          // if error we write specify msg about error and use func http.Error() for send this info to user
 		app.serverError(w, err) // updated, using serverError() in helpers.go
 		return
-		// old code, "app.errorLog.Println(err.Error())""           // updated, because using new logger instead standart GO logger
-		// old code, "http.Error(w, "Internal Server Error", 500)" //msg about server error(inside)
 	}
 
 	err = ts.Execute(w, nil) //we use func Execute() for write template's content in body of http response. Last parameter in Execute func needs for send dynamic data in template
 	if err != nil {
 		app.serverError(w, err) // using serverError() in helpers.go
-		// old code "app.errorLog.Println(err.Error())" // updated, because using new 'application' struct
-		// old code "http.Error(w, "Internal Server Error", 500)"
 	}
-
-	//w.Write([]byte("Hello from Snippetbox"))
 }
 
 // main page
