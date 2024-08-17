@@ -53,6 +53,26 @@ edit method SnippetModel.Insert(), create new snippet in table snippets and retu
 make SQL request and update code in snippets.go, use interface sql.Result which we get after execution DB.Exec(). 
 We have two methods from sql.Result, LastInsertId() and RowsAffected(), not all driver support these methods, PostgeSQL doesnt work with LastInsertId(), have to check driver's manual before use
 
-8.07 output a record from the database by ID from the URL
+8.07 output snippet from the database by snippet's ID from the URL
 
 edit method GET in file snippets.go
+
+13.07 test display latest snippets from DB
+
+17.08 display content from MySQL into HTML template
+
+fix error with mainpage
+
+work for today:
+-transfer dynamic data to HTML templates with scalable and secure way
+-use various operators and functions from html/template package to control the display of dynamic data in a website template -cache the template so that resources are not wasted on re-processing the template for each HTTP request
+-handle template rendering errors that occur at runtime
+-realise a way to pass global dynamic data to web pages without reapeating code in handlers
+-create custom functions to format and display data in HTML templates
+
+-protection against XSS attacks in Go - data shielding
+package "html/template" automatically escapes(screens) any data between {{}} tags, this behaviour helps to avoid cross-site scripting (XSS) attacks and is why use the "html/template" package instead of the simpler "text/template" package, also this package always removes any HTML comments you leave in template, including any conditional comments that are ofthen frontend developers make, this helps to avoid XSS attacks when dynamic content is displaying.
+
+was created new template file "show.page.tmpl" and new file "templates.go" which contains new struct
+tested - OK
+

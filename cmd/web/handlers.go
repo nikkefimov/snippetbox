@@ -29,7 +29,7 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 
 	// checking unexist pages
 
-	files := []string{ //creating slice which contains route for two tmpl files, file home.page.tmpl must go first in list
+	/*files := []string{ //creating slice which contains route for two tmpl files, file home.page.tmpl must go first in list
 		"./ui/html/home.page.tmpl",
 		"./ui/html/base.layout.tmpl",
 		"./ui/html/footer.partial.tmpl",
@@ -44,7 +44,7 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 	err = ts.Execute(w, nil) //we use func Execute() for write template's content in body of http response. Last parameter in Execute func needs for send dynamic data in template
 	if err != nil {
 		app.serverError(w, err) // using serverError() in helpers.go
-	}
+	}*/
 }
 
 // main page
@@ -65,7 +65,27 @@ func (app *application) showSnippet(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
-	fmt.Fprintf(w, "%v", s) // show all return on the page
+	// fmt.Fprintf(w, "%v", s) // show all returns on the page
+
+	data := &templateData{Snippet: s}
+
+	files := []string{
+		"./ui/html/show.page.tmpl",
+		"./ui/html/base.layout.tmpl",
+		"ui/html/footer.partial.tmpl",
+	}
+	//initialise slice contains rout to file show.page.tmpl, add base template and part of footer with allready made earlier
+
+	ts, err := template.ParseFiles(files...) //parsing files
+	if err != nil {
+		app.serverError(w, err)
+		return
+	}
+
+	err = ts.Execute(w, data) // execute snippet with data, transfer the templateData structure as the data for the template
+	if err != nil {
+		app.serverError(w, err)
+	}
 }
 
 // display notes
