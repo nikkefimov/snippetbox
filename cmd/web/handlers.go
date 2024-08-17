@@ -23,6 +23,10 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	app.render(w, r, "home.page.tmpl", &templateData{ // use render() for display template
+		Snippets: s,
+	})
+
 	/*for _, snippet := range s {
 		fmt.Fprintf(w, "%v\n", snippet)
 	}*/
@@ -68,6 +72,10 @@ func (app *application) showSnippet(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
+
+	app.render(w, r, "show.page.tmpl", &templateData{ // use helper render() for display template
+		Snippet: s,
+	})
 	// fmt.Fprintf(w, "%v", s) // show all returns on the page
 
 	data := &templateData{Snippet: s}

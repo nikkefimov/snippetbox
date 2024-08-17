@@ -3,6 +3,7 @@ package main
 import (
 	"database/sql"
 	"flag"
+	"html/template"
 	"log"
 	"net/http"
 	"os"
@@ -14,9 +15,10 @@ import (
 )
 
 type application struct {
-	errorLog *log.Logger
-	infoLog  *log.Logger
-	snippets *mysql.SnippeModel
+	errorLog      *log.Logger
+	infoLog       *log.Logger
+	snippets      *mysql.SnippeModel
+	templateCache map[string]*template.Template // add field templateCache in dependencies struct, this will allow access to cache in all handlers
 }
 
 // creating struct 'application' for storing the dependencies of app
@@ -54,10 +56,16 @@ func main() {
 	defer db.Close() // used for closing pool of connections before the func main() is closed
 	/// MySQL ///
 
+	templateCache, err := newTemplateCache("./ui/html/") // initialise new template cache
+	if err != nil {
+		errorLog.Fatal(err)
+	}
+
 	app := &application{ // initiate a new structure with dependency injection
-		errorLog: errorLog,
-		infoLog:  infoLog,
-		snippets: &mysql.SnippeModel{DB: db}, // initialise mysql.SnippetModel and add it in dependencies
+		errorLog:      errorLog,
+		infoLog:       infoLog,
+		snippets:      &mysql.SnippeModel{DB: db}, // initialise mysql.SnippetModel and add it in dependencies
+		templateCache: templateCache,              // add template cache in dependencies
 	}
 
 	//move this part of code to new file routes.go //

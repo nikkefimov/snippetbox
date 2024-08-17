@@ -27,3 +27,18 @@ func (app *application) notFound(w http.ResponseWriter) {
 }
 
 // helper notFound its a something like convenient shell around clientError, which sends to user answer "404 error"
+
+func (app *application) render(w http.ResponseWriter, r *http.Request, name string, td *templateData) {
+	ts, ok := app.templateCache[name]
+	if !ok {
+		app.serverError(w, fmt.Errorf("Template %s doesn't exist!", name))
+		return
+	}
+
+	// Extract the appropriate set of templates from the cache depending on the page name, if there is no entry of the requested template in the cache, then call the serverError() helper method
+
+	err := ts.Execute(w, td)
+	if err != nil {
+		app.serverError(w, err)
+	}
+}

@@ -80,3 +80,17 @@ work with operators and functions from Go template builder, was used {{define}},
 
 updated template files for main page, tested - OK
 
+17.07 template caching in Go
+avoid processes the template files using the template.ParseFiles() function everytime when a webpage is displayed by processing the files once druing application startup and storing the processed templates in a cache in memory
+
+put a code which reapets in handlers home and showSnippet in helper function
+
+for caching processed templates using map in templates.go
+
+initialise cache in main func
+
+create new method render in helpers.go
+
+update code in handlers.go for home() and showSnippet()
+
+
