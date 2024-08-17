@@ -63,7 +63,7 @@ edit method GET in file snippets.go
 
 fix error with mainpage
 
-work for today:
+some work with templates:
 -transfer dynamic data to HTML templates with scalable and secure way
 -use various operators and functions from html/template package to control the display of dynamic data in a website template -cache the template so that resources are not wasted on re-processing the template for each HTTP request
 -handle template rendering errors that occur at runtime
@@ -75,4 +75,8 @@ package "html/template" automatically escapes(screens) any data between {{}} tag
 
 was created new template file "show.page.tmpl" and new file "templates.go" which contains new struct
 tested - OK
+
+work with operators and functions from Go template builder, was used {{define}}, {{template}}, {{block}}, {{if}}, {{with}}, {{range}}
+
+updated template files for main page, tested - OK
 

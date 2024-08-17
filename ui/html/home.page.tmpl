@@ -3,6 +3,23 @@
 {{define "title"}}Home page{{end}}
 
 {{define "main"}}
-<h2>Last notes</h2>
-<p>nothing here</p>
+    <h2>Last notes</h2>
+    {{if .Snippets}}
+    <table>
+        <tr>
+            <th>Header</th>
+            <th>Created</th>
+            <th>ID</th>
+        </tr>
+        {{range .Snippets}}
+        <tr>
+            <td><a href='/snippet?id={{.ID}}'>{{.Title}}</a></td>
+            <td>{{.Created}}</td>
+            <td>#{{.ID}}</td>
+        </tr>
+        {{end}}
+    </table>
+    {{else}}
+        <p>There is nothing here... yet!</p>
+    {{end}}
 {{end}}

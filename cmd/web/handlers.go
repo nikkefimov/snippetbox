@@ -23,13 +23,15 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	for _, snippet := range s {
+	/*for _, snippet := range s {
 		fmt.Fprintf(w, "%v\n", snippet)
-	}
+	}*/
+
+	data := &templateData{Snippets: s} // create example of templateData struct which contains slice with snippets
 
 	// checking unexist pages
 
-	/*files := []string{ //creating slice which contains route for two tmpl files, file home.page.tmpl must go first in list
+	files := []string{ //creating slice which contains route for two tmpl files, file home.page.tmpl must go first in list
 		"./ui/html/home.page.tmpl",
 		"./ui/html/base.layout.tmpl",
 		"./ui/html/footer.partial.tmpl",
@@ -41,10 +43,11 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = ts.Execute(w, nil) //we use func Execute() for write template's content in body of http response. Last parameter in Execute func needs for send dynamic data in template
+	// transfer struct templateData in template and now struct is available inside of template files by using . before name
+	err = ts.Execute(w, data) //we use func Execute() for write template's content in body of http response. Last parameter in Execute func needs for send dynamic data in template
 	if err != nil {
 		app.serverError(w, err) // using serverError() in helpers.go
-	}*/
+	}
 }
 
 // main page
