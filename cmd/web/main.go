@@ -46,7 +46,7 @@ func main() {
 	// if we have several loggers and we use only one place for writing we have to be sure that method Write() also is safe for concurency using
 	errorLog := log.New(os.Stderr, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
 
-	// creat connections code in func openDB(), we feed in func datasource(dsn) from flag cli
+	// creat connections in func openDB(), we feed in func datasource(dsn) from flag cli
 	db, err := openDB(*dsn)
 	if err != nil {
 		errorLog.Fatal(err)
