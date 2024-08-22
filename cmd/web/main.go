@@ -82,10 +82,10 @@ func main() {
 		Handler:  app.routes(),
 	}
 
+	// information in terminal about server launching
 	infoLog.Printf("Launching server on %s", *addr)
 
-	// new logger, it was updated when model for MySQL was created
-	// before was used default Go's logger: "old default logger "err := http.ListenAndServe(*addr, mux)""
+	// method for logger and errors
 	err = srv.ListenAndServe()
 	errorLog.Fatal(err)
 }
