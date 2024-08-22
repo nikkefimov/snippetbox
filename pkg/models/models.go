@@ -14,3 +14,5 @@ type Snippet struct {
 	Created time.Time
 	Expires time.Time
 }
+
+// create struct and define top level daya types which model will use and return
