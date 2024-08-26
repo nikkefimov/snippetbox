@@ -32,7 +32,7 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 func (app *application) showSnippet(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(r.URL.Query().Get("id"))
 	if err != nil || id < 1 {
-		app.notFound(w) // old code: "http.NotFound(w, r)", using notFound() in helpers.go
+		app.notFound(w)
 		return
 	}
 
