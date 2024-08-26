@@ -29,7 +29,7 @@ func main() {
 	// adding info about flag
 	// value of flag will save in addr variable
 	addr := flag.String("addr", ":4000", "network adress HTTP")
-	dsn := flag.String("dsn", "web:pass@/snippetbox?parseTime=true", "Name of MySQL datasource")
+	dsn := flag.String("dsn", "web:pass@/snippetbox?parseTime=true", "MySQL data source name")
 
 	// we call function flag.Parse() for extract flag from CLI
 	// function reads flag's value from CLI and assign variable's content

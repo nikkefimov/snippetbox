@@ -8,38 +8,50 @@ import (
 
 type templateData struct {
 	Snippet  *models.Snippet
-	Snippets []*models.Snippet // add field Snippets in struct templateData
+	Snippets []*models.Snippet
 }
 
-// create new type templateData which works as a storage for dynamic data that need to be passed to HTML templates
-
-func newTemplateCache(dir string) (map[string]*template.Template, error) { // new map for store cache
+// initialize a new map which keeps cache
+func newTemplateCache(dir string) (map[string]*template.Template, error) {
 	cache := map[string]*template.Template{}
-	pages, err := filepath.Glob(filepath.Join(dir, "*.page.tmpl"))
+
+	// use the filepath.Glob() function to get a slice of all filepaths with '.page.tmpl'
+	// essentially we will get a list of all the template files for the pages our application
+	pages, err := filepath.Glob(filepath.Join(dir, "*page.tmpl"))
 	if err != nil {
 		return nil, err
 	}
 
-	// use func filepath.Glob for get slice with file routs with a type 'page.tmpl'
+	// go through the template files from each page
+	for _, page := range pages {
+		// extract the file name (like 'home.tmpl') from the full filepath
+		// and assign it to the name variable
+		name := filepath.Base(page)
 
-	for _, page := range pages { // going through the template files from each page
-		name := filepath.Base(page)          // exctract part of file's name '.tmpl' and assigning it to the name variable
-		ts, err := template.ParseFiles(page) // process the iterated template file
+		// process the iterate template file
+		ts, err := template.ParseFiles(page)
 		if err != nil {
 			return nil, err
 		}
 
-		ts, err = ts.ParseGlob(filepath.Join(dir, "*.layout.tmpl")) // use method ParseGlob for adding all framework templates, like a file 'base.layout.tmpl'
+		// use method ParseGlob for adding all framework templates
+		// in our case it is only 'base.layout.tmpl' file
+		ts, err = ts.ParseGlob(filepath.Join(dir, "*layout.tmpl"))
 		if err != nil {
 			return nil, err
 		}
 
-		ts, err = ts.ParseGlob(filepath.Join(dir, "*partial.tmpl")) // use method ParseGlob for adding additional templates, like a footer.partial.tmpl
+		// use method ParseGlob to add all others templates
+		ts, err = ts.ParseGlob(filepath.Join(dir, "*partial.tmpl"))
 		if err != nil {
 			return nil, err
 		}
-		cache[name] = ts // add the resulting set of templates to the cache using the page name as a key for our map
+
+		// add the resulting set of templates to the cache
+		// using the page name 'home.page.tmpl' as a key for our map
+		cache[name] = ts
 	}
 
-	return cache, nil // return the card we received
+	// return the map we received
+	return cache, nil
 }
