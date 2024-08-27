@@ -93,4 +93,10 @@ create new method render in helpers.go
 
 update code in handlers.go for home() and showSnippet()
 
+25.08 check whole code and comments
 
+check errors with display single snippets
+
+26.08 deliberate error 
+
+test errors, add errors catcher in file helpers.go
