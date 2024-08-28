@@ -100,3 +100,9 @@ check errors with display single snippets
 26.08 deliberate error 
 
 test errors, add errors catcher in file helpers.go
+
+28.08 
+
+common dynamic data, updated footer
+
+

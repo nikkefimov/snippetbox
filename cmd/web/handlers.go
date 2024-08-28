@@ -22,10 +22,11 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	data := app.newTemplateData(r)
+	data.Snippets = s
+
 	// use render() for display template
-	app.render(w, r, "home.page.tmpl", &templateData{
-		Snippets: s,
-	})
+	app.render(w, r, "home.page.tmpl", data)
 }
 
 // showSnippet page handler
@@ -47,10 +48,11 @@ func (app *application) showSnippet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	data := app.newTemplateData(r)
+	data.Snippet = s
+
 	// use helper render() for display template
-	app.render(w, r, "show.page.tmpl", &templateData{
-		Snippet: s,
-	})
+	app.render(w, r, "show.page.tmpl", data)
 }
 
 // createSnippet page handler

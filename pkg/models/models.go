@@ -7,6 +7,7 @@ import (
 
 var ErrNoRecord = errors.New("models: ")
 
+// create struct and define top level data types which model will use and return
 type Snippet struct {
 	ID      int
 	Title   string
@@ -14,5 +15,3 @@ type Snippet struct {
 	Created time.Time
 	Expires time.Time
 }
-
-// create struct and define top level daya types which model will use and return
