@@ -27,3 +27,6 @@ func (app *application) logRequest(next http.Handler) http.Handler {
 		next.ServeHTTP(w, r)
 	})
 }
+
+// depending on how your brower caches static files you might
+// need to do hard refresh to see any requests for static files
