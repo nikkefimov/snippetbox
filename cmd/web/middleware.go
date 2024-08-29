@@ -1,6 +1,9 @@
 package main
 
-import "net/http"
+import (
+	"fmt"
+	"net/http"
+)
 
 // flow of controul appplication lools like "secureHeader - servemux - application handler"
 func secureHeaders(next http.Handler) http.Handler {
@@ -28,5 +31,16 @@ func (app *application) logRequest(next http.Handler) http.Handler {
 	})
 }
 
-// depending on how your brower caches static files you might
-// need to do hard refresh to see any requests for static files
+func (app *application) recoverPanic(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer func() {
+			if err := recover(); err != nil {
+				w.Header().Set("Connection", "close")
+				app.serverError(w, fmt.Errorf("%s", err))
+			}
+		}()
+
+		next.ServeHTTP(w, r)
+
+	})
+}

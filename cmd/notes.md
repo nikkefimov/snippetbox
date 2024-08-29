@@ -107,14 +107,23 @@ common dynamic data, updated footer
 
 custom template functions
 
-29.08 middleware
+29.08 
+
+-Middleware
 
 create middleware.go and update routes.go
 
 for check middleware info use curl request with a flag "curl -I http://localhost:4000/"
 
-request logging
+-Request logging
 
 create logRequest() method using the standart middleware pattern
 
 update middleware.go and routes.go
+
+-Panic recovery, in a simple Go application when your code panics it will result in the application being terminated straight away. But in our application is a bit more sophisticated, Go HTTP server assumes that he effect of any panis is isolated to the goroutine serving the active HTTP request(every request is handled in its own goroutine).
+
+if create deliberate panic in handlers.go, check by curl request, it would be Empty replry from server and empty response due to Go closing the underlying HTTP connection following the panic
+this is not a greate experience for the user, it would be more appropriate and meaningful to send them a prope HTTP repsonse with a 500 Internal Server Error status instead
+
+a neat way of doing this is to create some middleware which recovers the panic and calls our app.serverError() helper method

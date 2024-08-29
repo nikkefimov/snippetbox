@@ -18,9 +18,6 @@ func (app *application) routes() http.Handler {
 	fs := http.FileServer(nfs.NeuteredFileSystem{Fs: http.Dir(",/ui/static")})
 	mux.Handle("/static", http.StripPrefix("/static", fs))
 
-	// wrap the existing chain with the logRequest middleware
-	return app.logRequest(secureHeaders(mux))
+	// wrap the existing chain with the logRequest middleware + recoverPanic middleware
+	return app.logRequest(app.logRequest(app.recoverPanic(mux))) // i was used recoverPanic method except secureHeaders
 }
-
-// very important that update the signature of the routes() method
-// so that it returns http.Handler here, othewise you will get a compile-time error
