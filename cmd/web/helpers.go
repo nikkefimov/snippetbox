@@ -35,7 +35,7 @@ func (app *application) render(w http.ResponseWriter, r *http.Request, name stri
 	// if there is no entry of the requested template in the cache, then call the serverError() helper method
 	ts, ok := app.templateCache[name]
 	if !ok {
-		app.serverError(w, fmt.Errorf("The template %s doesn't exist", name))
+		app.serverError(w, fmt.Errorf("the template %s doesn't exist", name))
 		return
 	}
 

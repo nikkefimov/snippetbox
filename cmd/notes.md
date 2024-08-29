@@ -105,4 +105,12 @@ test errors, add errors catcher in file helpers.go
 
 common dynamic data, updated footer
 
+custom template functions
+
+29.08 middleware
+
+create middleware.go and update routes.go
+
+for check middleware info use curl request with a flag "curl -I http://localhost:4000/"
+
 

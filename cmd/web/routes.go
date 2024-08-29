@@ -5,8 +5,9 @@ import (
 	"snippetbox/pkg/nfs"
 )
 
-// use mux as a router, create method routes()
-func (app *application) routes() *http.ServeMux {
+// update the signature for the routes() method so that it returns a
+// http.Handler instead of *http.ServerMux
+func (app *application) routes() http.Handler {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", app.home)
 	mux.HandleFunc("/snippet", app.showSnippet)
@@ -17,5 +18,8 @@ func (app *application) routes() *http.ServeMux {
 	fs := http.FileServer(nfs.NeuteredFileSystem{Fs: http.Dir(",/ui/static")})
 	mux.Handle("/static", http.StripPrefix("/static", fs))
 
-	return mux
+	return secureHeaders(mux)
 }
+
+// very important that update the signature of the routes() method
+// so that it returns http.Handler here, othewise you will get a compile-time error
