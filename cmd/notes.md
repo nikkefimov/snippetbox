@@ -113,4 +113,8 @@ create middleware.go and update routes.go
 
 for check middleware info use curl request with a flag "curl -I http://localhost:4000/"
 
+request logging
 
+create logRequest() method using the standart middleware pattern
+
+update middleware.go and routes.go

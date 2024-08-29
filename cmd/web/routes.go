@@ -18,7 +18,8 @@ func (app *application) routes() http.Handler {
 	fs := http.FileServer(nfs.NeuteredFileSystem{Fs: http.Dir(",/ui/static")})
 	mux.Handle("/static", http.StripPrefix("/static", fs))
 
-	return secureHeaders(mux)
+	// wrap the existing chain with the logRequest middleware
+	return app.logRequest(secureHeaders(mux))
 }
 
 // very important that update the signature of the routes() method
