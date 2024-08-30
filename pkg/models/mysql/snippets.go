@@ -14,7 +14,7 @@ type SnippeModel struct {
 
 // define the type which wraps the connection pool
 
-func (m *SnippeModel) Insert(title, content, expires string) (int, error) {
+func (m *SnippeModel) Insert(title string, content string, expires int) (int, error) {
 	stmt := `INSERT INTO snippets (title, content, created, expires)
 	VALUES(?, ?, UTC_TIMESTAMP(), DATE_ADD(UTC_TIMESTAMP(), INTERVAL ? DAY))` // SQL request, used `` here because request has two strings
 	result, err := m.DB.Exec(stmt, title, content, expires) // used Exec() for making request, first its SQL request and second header of note, body of note and lifetime of note, this method returns sql.Result, which contains data what happened after request

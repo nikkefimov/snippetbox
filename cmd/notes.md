@@ -132,3 +132,28 @@ a neat way of doing this is to create some middleware which recovers the panic a
 its easy to create composable, reusable, middleware chains and that can be a real help application to grows and routes become more complex, the packgae itself is also small and lightweight and the code is clean and well written
 
 update file routes.go with new package "Alice"
+
+-Advanced routing, work with createSnippet handler
+For GET /snippet/create requests adding a new snippet with a HTML form
+For POST /snippet/create requests process this form data and then insert a new snippet record into database
+
+Method Pattern              Handler             Action
+GET    /                    home                Display the home page
+GET    /snippet/view/:id    showSnippet         Display a specific snippet
+GET    /snippet/create      createSnippet       Display a HTML for for creating a new snippet
+POST   /snippet/create      createSnippetPost   Create a new snippet
+GET    /static/             http.FileServer     Serve a specific static file
+
+For some reasons Go's servemux doesnt support method based routing or clean URLs with variables in them,
+most people tend to decide that its easier to reach for a third-party package to help with routing (julienschmidt/httprouter, go-chi/chi and gorilla/mux) this all three support method-based routing and clean URLs, but beyond that they have lightly different behaviours and features.
+
+In summary:
+*julienschmidt/httprouter is the most focused, lightweight and fastest of the three packages, and is about as close to 'perfect' as any third-party router gets in terms of its compliance with the HTTP specs. It automaticly handles OPTIONS requests and sends 405 responses correctly, and allows you to set custom handlers for 404 and 405 responses too.
+*go-chi/chi is generally similar to httprouter in terms of its featues, with the main differences being that it also supports regexp route patterns and 'grouping' of routes which use specific middleware. This route grouping features is really valuable in larger applications where you have lots routes and middleware to manage(two downsides of chi are that it doesnt automatically handle OPTIONS requests and it doesnt set an Allow header in 405 responses).
+*gorilla/mux is the most full-featured of the tree routers. It supports regexp route patterns, and allows to route requests based on scheme, host and headers. Its also the only one to support custom routing rules and route 'reversing'(like you get in Django, Rails, or Laravel). The main downside of gorilla/mux is that its comparatively slow and memory hungry - although for a dayabase-driven web application like ours app the impact over the lifetime of a whole HTTP request is likely to be small. Like chi, it also doesnt automatically handle OPTIONS requests and it doesnt set an Allow header in 405 responses.
+
+In our case, our application is fairly small and we dont need support for anuthing beyond basic method-based routing and clean URLs. So, for the sake of performance and correctness, we will opt to use julienschmidt/httprouter in this project.
+
+-Clean URLs and method-based routing
+
+install httprouter package, update routes.go and handlers.go and template home.page
