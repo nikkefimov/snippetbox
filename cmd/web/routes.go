@@ -3,6 +3,8 @@ package main
 import (
 	"net/http"
 	"snippetbox/pkg/nfs"
+
+	"github.com/justinas/alice"
 )
 
 // update the signature for the routes() method so that it returns a
@@ -18,6 +20,8 @@ func (app *application) routes() http.Handler {
 	fs := http.FileServer(nfs.NeuteredFileSystem{Fs: http.Dir(",/ui/static")})
 	mux.Handle("/static", http.StripPrefix("/static", fs))
 
-	// wrap the existing chain with the logRequest middleware + recoverPanic middleware
-	return app.logRequest(app.logRequest(app.recoverPanic(mux))) // i was used recoverPanic method except secureHeaders
+	// use new package alice
+	standart := alice.New(app.recoverPanic, app.logRequest, secureHeaders)
+
+	return standart.Then(mux)
 }

@@ -127,3 +127,8 @@ if create deliberate panic in handlers.go, check by curl request, it would be Em
 this is not a greate experience for the user, it would be more appropriate and meaningful to send them a prope HTTP repsonse with a 500 Internal Server Error status instead
 
 a neat way of doing this is to create some middleware which recovers the panic and calls our app.serverError() helper method
+
+-Composable middleware chains, use justinas/alice package to help us manage our middleware/handler chains
+its easy to create composable, reusable, middleware chains and that can be a real help application to grows and routes become more complex, the packgae itself is also small and lightweight and the code is clean and well written
+
+update file routes.go with new package "Alice"
