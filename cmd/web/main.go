@@ -7,10 +7,9 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"snippetbox/pkg/models"
 
 	_ "github.com/go-sql-driver/mysql"
-
-	"snippetbox/pkg/models/mysql"
 )
 
 // Define struct application for storing the dependencies of app
@@ -19,7 +18,7 @@ import (
 type application struct {
 	errorLog      *log.Logger
 	infoLog       *log.Logger
-	snippets      *mysql.SnippeModel
+	snippets      *models.SnippeModel
 	templateCache map[string]*template.Template //
 }
 
@@ -67,7 +66,7 @@ func main() {
 	app := &application{
 		errorLog:      errorLog,
 		infoLog:       infoLog,
-		snippets:      &mysql.SnippeModel{DB: db},
+		snippets:      &models.SnippeModel{DB: db},
 		templateCache: templateCache,
 	}
 
