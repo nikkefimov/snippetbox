@@ -160,3 +160,15 @@ install httprouter package, update routes.go and handlers.go and template home.p
 
 30.08 Processing forms
 
+-Update handlers.go, create createSnippet handler, update create.page.tmpl
+
+31.08 Parsing for data
+
+-Update snippetCreatePost method in handlers.go file.
+
+-Accessed the form values via the r.PostForm map. But an alternative approach is to use the(subtly different) r.Form map.
+The r.PostForm pas is populated only for POST, PATCH and PUT requests, and contains the form data from the request body.
+
+In contrast, the r.Form map is populated for all requests(irrespective of their HTTP method), and contrain the form data from any request body and any query string parameters. So if our form was submitted to /snippet/create?foo=bar, we could also het the value of the foo parameter by calling r.Form.Get("foo"). Note that in the event of a conflict, the request body value will take precedent over the query string parameter.
+
+Using the f.Form map can be useful if your application sends data in a HTML form and in the URL, or you have an application that is agnostic about how parameters are passed. Our case this things are not applicable, expect our form data to be sent in the request body only, so it is for sensible for us to acces it via r.PostForm
