@@ -9,6 +9,7 @@ import (
 	"os"
 	"snippetbox/pkg/models"
 
+	"github.com/go-playground/form/v4"
 	_ "github.com/go-sql-driver/mysql"
 )
 
@@ -19,7 +20,8 @@ type application struct {
 	errorLog      *log.Logger
 	infoLog       *log.Logger
 	snippets      *models.SnippeModel
-	templateCache map[string]*template.Template //
+	templateCache map[string]*template.Template
+	formDecoder   *form.Decoder
 }
 
 func main() {
@@ -60,6 +62,9 @@ func main() {
 		errorLog.Fatal(err)
 	}
 
+	// Initialize a decoder instance...
+	formDecoder := form.NewDecoder()
+
 	// define a new structure with dependency injection
 	// initialise mysql.SnippetModel and add it in dependencies
 	// add template cache in dependencies
@@ -68,6 +73,8 @@ func main() {
 		infoLog:       infoLog,
 		snippets:      &models.SnippeModel{DB: db},
 		templateCache: templateCache,
+		// Add add it to the application dependencies
+		formDecoder: formDecoder,
 	}
 
 	// start a web server listening on porn :4000, using the mux as a router from file routes.go

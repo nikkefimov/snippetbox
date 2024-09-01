@@ -80,11 +80,15 @@ func (app *application) createSnippet(w http.ResponseWriter, r *http.Request) {
 // Remove the explicit FieldErrors struct field and instead embed the Validator type.
 // Embediing this means that our snippetCreateForm 'inherits' all the
 // fields and methods of our Validator type, including the FieldErrors field.
+// Update struct to include tags which tell the decoder how to map HTML form values
+// into the different struct fields. Here are tell the decoder to store the value from the HTML form
+// input with the name "title" in the Title field. The struct tag `form:"-"` tells
+// the decoder to completely ignore a field during decoding.
 type snippetCreateForm struct {
-	Title   string
-	Content string
-	Expires int
-	validator.Validator
+	Title               string `form:"title"`
+	Content             string `form:"content"`
+	Expires             int    `form:"expires"`
+	validator.Validator `form:"-"`
 }
 
 func (app *application) snippetCreatePost(w http.ResponseWriter, r *http.Request) {
@@ -98,20 +102,17 @@ func (app *application) snippetCreatePost(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	// Get the expires value from the form as normal.
-	expires, err := strconv.Atoi(r.PostForm.Get("expires"))
+	// Declare a new empty instance of the snippetCreateForm struct
+	var form snippetCreateForm
+
+	// Call the Decode() method of the form decoder, passing in the current request
+	// add *a pointer* to our snippetCreateForm struct.
+	// This will essentially fill our struct with the revelant values from the HTML form.
+	// IF there is a problem, we return a 400 Bad Request response to the cliend.
+	err = app.formDecoder.Decode(&form, r.PostForm)
 	if err != nil {
 		app.clientError(w, http.StatusBadRequest)
 		return
-	}
-
-	// Create an instance of the snippetCreateForm struct containing the values
-	// from the form and an empty map for any validation errors.
-	form := snippetCreateForm{
-		Title:   r.PostForm.Get("title"),
-		Content: r.PostForm.Get("content"),
-		Expires: expires,
-		// Remove the FieldErrors assignment from here.
 	}
 
 	// Because the Validator type is embedded by the snippetCreateForm struct,

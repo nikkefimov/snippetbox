@@ -188,3 +188,9 @@ Using the f.Form map can be useful if your application sends data in a HTML form
  -Creating validation helpers
 
  Update code in handlers.go and create validator.go (validator package)
+
+ -Automatic form parsing
+
+ download package goplayground/form or gorila/schema to automatically decode the form data into the crateSnippetForm struct
+
+add package and update files main.go and handlers.go
