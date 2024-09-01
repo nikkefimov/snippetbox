@@ -172,3 +172,13 @@ The r.PostForm pas is populated only for POST, PATCH and PUT requests, and conta
 In contrast, the r.Form map is populated for all requests(irrespective of their HTTP method), and contrain the form data from any request body and any query string parameters. So if our form was submitted to /snippet/create?foo=bar, we could also het the value of the foo parameter by calling r.Form.Get("foo"). Note that in the event of a conflict, the request body value will take precedent over the query string parameter.
 
 Using the f.Form map can be useful if your application sends data in a HTML form and in the URL, or you have an application that is agnostic about how parameters are passed. Our case this things are not applicable, expect our form data to be sent in the request body only, so it is for sensible for us to acces it via r.PostForm
+
+1.09 Validation form data
+ 
+ -Update handlers.go, create a map
+
+ When we check the length of the title field we are using the utf8.RuneCountInString()function - notGo's len() function. This is because we want to count the number of characters in the title rather than the number of bytes. To illustrate the difference, the sting "šop" has 3 characters but a length of 4 bytes because of the umlauted š character.
+
+ -Displaying erros and repopulating fields
+
+ update snippetCreatePost and create.page template file
