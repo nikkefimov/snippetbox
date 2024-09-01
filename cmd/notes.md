@@ -181,4 +181,10 @@ Using the f.Form map can be useful if your application sends data in a HTML form
 
  -Displaying erros and repopulating fields
 
- update snippetCreatePost and create.page template file
+ update snippetCreatePost and create.page template file (unlike struct fields, map key names dont have to be capitalized in order to access them from a template)
+
+ For the validation errors, the underlying type of our FieldErrors field is a map[string]string, which uses the form field names as keys. For maps, its possible to access the value for a given key by simply chaining the key name. So, for example, to render a validation error for the title field we can use the tag{{.Form.FieldErrors.title}} in our template.
+
+ -Creating validation helpers
+
+ Update code in handlers.go and create validator.go (validator package)

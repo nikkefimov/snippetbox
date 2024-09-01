@@ -5,10 +5,9 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
-	"strings"
-	"unicode/utf8"
 
 	"snippetbox/pkg/models"
+	"snippetbox/pkg/validator"
 
 	"github.com/julienschmidt/httprouter"
 )
@@ -44,7 +43,7 @@ func (app *application) showSnippet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// call method Get from for getting data by snippet's ID, if cant find snippet, then returns answer 404 error
+	// Call method Get from for getting data by snippet's ID, if cant find snippet, then returns answer 404 error
 	snippet, err := app.snippets.Get(id)
 	if err != nil {
 		if errors.Is(err, models.ErrNoRecord) {
@@ -58,21 +57,9 @@ func (app *application) showSnippet(w http.ResponseWriter, r *http.Request) {
 	data := app.newTemplateData(r)
 	data.Snippet = snippet
 
-	// use helper render() for display template
+	// Use helper render() for display template
 	app.render(w, r, "show.page.tmpl", data)
 }
-
-/* createSnippet page handler
-func (app *application) createSnippet(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		w.Header().Set("Allow", http.MethodPost) //use method Header().Set() for add header 'Allow: POST' in map of http-headers, first parameter name of header, second value of header
-		//w.WriteHeader(405)                       // we can call in handler only one time, for second time GO will give error for us. We have to call writeheader once before write for another status(instead 200 OK)
-		//w.Write([]byte("Get method forbidden!\n"))
-		app.clientError(w, http.StatusMethodNotAllowed) // using clientError() in helpers.go // old code: "http.Error(w, "Method is forbidden!", http.StatusMethodNotAllowed)" //we use func http.Error() for send different statuses
-		return
-	}
-}
-*/
 
 // Add a new snippetCreate handler, which for now returns a placeholder response.
 // Will update this shortly to show a HTML form.
@@ -90,15 +77,14 @@ func (app *application) createSnippet(w http.ResponseWriter, r *http.Request) {
 	app.render(w, r, "create.page.tmpl", data)
 }
 
-// Define a snippetCreateForm struct to represent the form data and validation
-// errors for the form fields. Note that all the struct fields are deliberately exported
-// This is because struct fields must be exported in order to be read by the hmtl/template
-// packgae when redering the template.
+// Remove the explicit FieldErrors struct field and instead embed the Validator type.
+// Embediing this means that our snippetCreateForm 'inherits' all the
+// fields and methods of our Validator type, including the FieldErrors field.
 type snippetCreateForm struct {
-	Title       string
-	Content     string
-	Expires     int
-	FieldErrors map[string]string
+	Title   string
+	Content string
+	Expires int
+	validator.Validator
 }
 
 func (app *application) snippetCreatePost(w http.ResponseWriter, r *http.Request) {
@@ -122,37 +108,31 @@ func (app *application) snippetCreatePost(w http.ResponseWriter, r *http.Request
 	// Create an instance of the snippetCreateForm struct containing the values
 	// from the form and an empty map for any validation errors.
 	form := snippetCreateForm{
-		Title:       r.PostForm.Get("title"),
-		Content:     r.PostForm.Get("content"),
-		Expires:     expires,
-		FieldErrors: map[string]string{},
+		Title:   r.PostForm.Get("title"),
+		Content: r.PostForm.Get("content"),
+		Expires: expires,
+		// Remove the FieldErrors assignment from here.
 	}
 
-	// Update the validation checks so that they operate on the snippetCreateForm instance.
-	if strings.TrimSpace(form.Title) == "" {
-		form.FieldErrors["title"] = "This field cannot be blank"
-	} else if utf8.RuneCountInString(form.Title) > 100 {
-		form.FieldErrors["title"] = "This field cannot be more than 100 characters long"
-	}
+	// Because the Validator type is embedded by the snippetCreateForm struct,
+	// we can call CheckField() directly on it to execute our validation checks.
+	// CheckField() will add the provided key and error message to he
+	// FieldErros map if the check does not evaluate to true. For example, in
+	// the first line here we "check that the form. Title field is not blank".
+	// In the second, we "check that the form. Title field has a maximum character
+	// length of 100" and so on.
+	form.CheckField(validator.NotBlank(form.Title), "title", "This field cannot be blank")
+	form.CheckField(validator.MaxChars(form.Title, 100), "title", "This field cannot be more than 100 characters long")
+	form.CheckField(validator.NotBlank(form.Content), "title", "This field cannot be blank")
+	form.CheckField(validator.PermittedInt(form.Expires, 1, 7, 365), "expires", "This field must equal 1, 7 or 365")
 
-	// Check that the Content value is not blank.
-	if strings.TrimSpace(form.Content) == "" {
-		form.FieldErrors["content"] = "This field cannot be blank"
-	}
-
-	// Check the expires value matches one of the permitted values (1, 7, or 365).
-	if form.Expires != 1 && form.Expires != 7 && form.Expires != 365 {
-		form.FieldErrors["expires"] = "This field must equal 1, 7 or 365"
-	}
-
-	// If there are any validation erros re-display the create.page.tmpl template,
-	// passing in the snippetCreateForm instance as dynamic data in the Form field.
-	// Note that we use the HTTP status code 422 Unprocessable Entity
-	// when sending the response to indicate that there was a validation error.
-	if len(form.FieldErrors) > 0 {
+	// Use the Valid() method to see if any of the checks failed. If they did
+	// then re-render the template passing in the form in the same way as before
+	if !form.Valid() {
 		data := app.newTemplateData(r)
 		data.Form = form
 		app.render(w, r, "create.page.tmpl", data)
+		return
 	}
 
 	// Also need to update this line to pass the data from the
