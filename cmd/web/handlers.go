@@ -96,14 +96,15 @@ func (app *application) snippetCreatePost(w http.ResponseWriter, r *http.Request
 	// to the r.PostForm map. This also works in the sam way for PUT and PATCH requests.
 	// If there are any errors, we use our app. ClienError() helper to
 	// send a 400 Bad Request response to the user
-	err := r.ParseForm()
+
+	// Declare a new empty instance of the snippetCreateForm struct
+	var form snippetCreateForm
+
+	err := app.decodePostForm(r, &form)
 	if err != nil {
 		app.clientError(w, http.StatusBadRequest)
 		return
 	}
-
-	// Declare a new empty instance of the snippetCreateForm struct
-	var form snippetCreateForm
 
 	// Call the Decode() method of the form decoder, passing in the current request
 	// add *a pointer* to our snippetCreateForm struct.

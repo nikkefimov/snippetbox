@@ -194,3 +194,8 @@ Using the f.Form map can be useful if your application sends data in a HTML form
  download package goplayground/form or gorila/schema to automatically decode the form data into the crateSnippetForm struct
 
 add package and update files main.go and handlers.go
+
+When call app.formDecoder.Decode() it requires a non-nil pointer as the target decode destination. If we try to pass in something that is not a non-nil pointer, then Decode() will return a form.InvalidDecodeError error.
+It is a critical problem with our application code(rather than a client error due to bad input). Need to check for this error specifically and manage it as a special case, rather than just returning a 400 Bad Request response.
+
+Creating a decodePostForm helper, update helpers.go file
