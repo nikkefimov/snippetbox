@@ -75,7 +75,10 @@ func (app *application) createSnippet(w http.ResponseWriter, r *http.Request) {
 // Add a new snippetCreate handler, which for now returns a placeholder response.
 // We will update this shortly to show a HTML form.
 func (app *application) createSnippet(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("Display the form for creating a new snippet..."))
+	//w.Write([]byte("Display the form for creating a new snippet..."))
+	data := app.newTemplateData(r)
+
+	app.render(w, r, "create.page.tmpl", data)
 }
 
 func (app *application) snippetCreatePost(w http.ResponseWriter, r *http.Request) {

@@ -157,3 +157,6 @@ In our case, our application is fairly small and we dont need support for anuthi
 -Clean URLs and method-based routing
 
 install httprouter package, update routes.go and handlers.go and template home.page
+
+30.08 Processing forms
+
