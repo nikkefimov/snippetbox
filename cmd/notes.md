@@ -224,3 +224,9 @@ use alexedwards/scs package, before need to do create a sessions table in MySQL 
 
 update main.go
 The scs.New() function returns a pointer to a SessionManager struct which holds configuration settings for your sessions. In the code have set the Store and Lifetime fields of this struct, but there is a range of other fields that you can and should configure depending on application's need.
+
+update routes.go
+
+-Working with session data
+set the session functionality to work and use it to persist the confirmation flash message between HTTP requests.
+Update handlers.go, templates.go, base.layout.tmpl
