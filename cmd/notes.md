@@ -230,3 +230,9 @@ update routes.go
 -Working with session data
 set the session functionality to work and use it to persist the confirmation flash message between HTTP requests.
 Update handlers.go, templates.go, base.layout.tmpl
+
+-Auto displaying flash messages
+automate the display of flash messages, that any message is automatically included the next time any page is rendered.
+That change means that no longer need to check for the flash message within the snippetView handler.
+
+update helpers.go, edit handlers.go
