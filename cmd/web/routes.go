@@ -11,7 +11,7 @@ func (app *application) routes() http.Handler {
 	// Initialize the router
 	router := httprouter.New()
 
-	// Create a handler function which wramps our notFound() helper
+	// Handler function which wramps our notFound() helper
 	// and then assign it as the custom handler for 404 Not Found responses
 	// Also set a custom handler for 405 Method Not Allowed responses by setting
 	// router.MethodNotAllowed in the same way too.
@@ -19,23 +19,23 @@ func (app *application) routes() http.Handler {
 		app.notFound(w)
 	})
 
-	// Update the patter for the route for the static files
+	// The patter for the route for the static files
 	fileServer := http.FileServer(http.Dir("./ui/static"))
 	router.Handler(http.MethodGet, "/static/*filepath", http.StripPrefix("/static", fileServer))
 
-	router.HandlerFunc(http.MethodGet, "/", app.home)
-	router.HandlerFunc(http.MethodGet, "/snippet/view/:id", app.showSnippet)
-	router.HandlerFunc(http.MethodGet, "/snippet/create", app.createSnippet)
-	router.HandlerFunc(http.MethodPost, "/snippet/create", app.snippetCreatePost)
+	// Create a new middleware chain contaiting the middleware specifigc to dynamic
+	// application routes, for now this chain will only contain the LoadAndSave
+	// session middleware.
+	dynamic := alice.New(app.sessionManager.LoadAndSave)
 
-	//mux := http.NewServeMux()
-	//mux.HandleFunc("/", app.home)
-	//mux.HandleFunc("/snippet", app.showSnippet)
-	//mux.HandleFunc("/snippet/create", app.createSnippet)
-
-	// Update the pattern for the route for the static files
-	//fs := http.FileServer(nfs.NeuteredFileSystem{Fs: http.Dir(",/ui/static")})
-	//mux.Handle("/static", http.StripPrefix("/static", fs))
+	// Update these routes to use the new dynamic middleware chain followed by
+	// the appropriate handler function. Because the alice ThenFunc()
+	// method returns a http.Handler (rather than a http.HandlerFunc) we also
+	// need to switch to registreting the route using the router.Handler() method.
+	router.Handler(http.MethodGet, "/", dynamic.ThenFunc(app.home))
+	router.Handler(http.MethodGet, "/snippet/view/:id", dynamic.ThenFunc(app.showSnippet))
+	router.Handler(http.MethodGet, "/snippet/create", dynamic.ThenFunc(app.createSnippet))
+	router.Handler(http.MethodPost, "/snippet/create", dynamic.ThenFunc(app.snippetCreatePost))
 
 	// Create the middleware chain as normal
 	standart := alice.New(app.recoverPanic, app.logRequest, secureHeaders)

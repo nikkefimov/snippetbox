@@ -199,3 +199,28 @@ When call app.formDecoder.Decode() it requires a non-nil pointer as the target d
 It is a critical problem with our application code(rather than a client error due to bad input). Need to check for this error specifically and manage it as a special case, rather than just returning a 400 Bad Request response.
 
 Creating a decodePostForm helper, update helpers.go file
+
+02.09 Stateful HTTP
+
+A confirmation message like this should only show up for the user once (after creating snippet) and no other user should ever see the message.
+
+There are a lot of security considerations when it comes to working with sessions and proper implementation is not trivial. Unless you really need to roll your own implementation, its a good idea to use an existing, well-tested, third-party package.
+
+*gorilla/sessions
+is the most establishe dand well-known sessian management package for Go. It has a simple and easy to use API and let's you stroe session data clien side(in signed and ecrypted cookies) or server side(in a database like MySQL), PostgeSQL or Redis.
+It doesnt provide mechanism to renew session IDs, which is necessary to reduce risks associated with session fixation attacks if you are using one of the server side session stores.
+
+*alexedwards/scs 
+lets store session data server side only. It supports automatic loading and saving of session data via middleware, has a nice interface fpr type safe manipulation of data and does allow renvewal of session IDs. Like gorilla/sessions, it also supports a variety of databases including MySQL, PostgreSQL and Redis.
+
+In summary, if you want to store session data client side in a coockie then gorilla/sessions is a good choice, but otherwise alexedwards/scs is generally the better option due to the ability to renew sessionn IDs.
+
+get github.com/alexedwards/scs/v2@v2
+get github.com/alexedwards/scs/mysqlstore
+
+-Setting up the session manager
+
+use alexedwards/scs package, before need to do create a sessions table in MySQL database to hold the session data for users.
+
+update main.go
+The scs.New() function returns a pointer to a SessionManager struct which holds configuration settings for your sessions. In the code have set the Store and Lifetime fields of this struct, but there is a range of other fields that you can and should configure depending on application's need.
