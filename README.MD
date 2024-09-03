@@ -18,7 +18,7 @@ It's a full-stack CRUD application entirely written in Go. Through this app you 
 
 ### Execute app
 
-##### `go run cmd/web/ .`
+##### `go run ./cmd/web`
 
 <b>The server will be started on port 4000 (https://localhost:4000)</b>
 
