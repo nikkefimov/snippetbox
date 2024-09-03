@@ -236,3 +236,5 @@ automate the display of flash messages, that any message is automatically includ
 That change means that no longer need to check for the flash message within the snippetView handler.
 
 update helpers.go, edit handlers.go
+
+03.08
