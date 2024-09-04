@@ -76,6 +76,12 @@ func main() {
 	sessionManager.Store = mysqlstore.New(db)
 	sessionManager.Lifetime = 12 * time.Hour
 
+	// Make sure that the Secure attribute is set on our session cookies.
+	// Setting this means that the cookie will only be sent by a user's web
+	// browser when a HTTPS connection is being used (and won't be sent over an
+	// unsecure HTTP connection).
+	sessionManager.Cookie.Secure = true
+
 	// Structure with dependency injection.
 	app := &application{
 		errorLog:       errorLog,
@@ -96,8 +102,14 @@ func main() {
 	// Information in terminal about server launching.
 	infoLog.Printf("Launching server on %s", *addr)
 
+	// Use the ListenAndServerTLS() method to start the HTTPS server
+	// Pass in the path to the TLS certificate and corresponding private key as
+	// the two parameters.
+	err = srv.ListenAndServeTLS("./tls/cert.pem", "./tls/key.pem")
+
 	// Method for logger and errors.
-	err = srv.ListenAndServe()
+	// err = srv.ListenAndServe() *old ListenAndServe*
+
 	errorLog.Fatal(err)
 }
 

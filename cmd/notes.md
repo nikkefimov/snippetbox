@@ -243,11 +243,27 @@ Make some improvements to application, secure data during transit and make serve
 
 -Generating a self-signed TLS certificate.
 
-For MacOS, FreeBSD or Linux the generate_cert.go file should be located under: /usr/local/go/crypto/tls/
+For MacOS, FreeBSD or Linux the generate_cert.go file should be located under: "/usr/local/go/crypto/tls/"
 
-For generate certificate execute in terminal in folder tls: go run /usr/local/go/src/crypto/tls/generate_cert.go --rsa-bits=2048 --host=localhost
+For generate certificate execute in terminal in folder tls: "go run /usr/local/go/src/crypto/tls/generate_cert.go --rsa-bits=2048 --host=localhost"
 
 First it generates a 2048-bit RSA key pair, which is a cryptographically secure public key and private key. It then stroes the private key in a key.pem file and generates a self signed TLS certificate for the host localhost containing the public key, which is stores in a cert.pem. Both the private key and certificate are PEM encoded, which is the standart format used by most TLS implementations.
 
 Now application has a self signed TLS certificate and corresponding private key that can be use during development.
 
+-Running a HTTPS server
+
+Now starting a HTTPS web server, just need make some changes in main.go and swap srv.ListenAndServe() to swap srv.ListenAndServe() instead.
+After that, the only difference is that it will now be talking HTTPS instead of HTTP (https://localhost:4000/)
+Application homepage should appear (although it will still carry a warning in the URL bar because the TLS certificate is self-signed).
+
+If inspect page, we will see in security technical details section, that connection is encrypted and working as expected.
+That TLS version 1.3 is being used and che cipher suite for HTTPS connection is TLS_AES_128_GCM_SHA256.
+
+Important to know that HTTPS server only supports HTTPS. If try making a regular HTTP request to it, the server will send the user a 400 Bad Request status and the message "CLient sent an HTTP request to an HTTPS server". Nothing will be logged.
+
+A big plus of using HTTPS is that, if a client supports HTTP/2 connections - Go's HTTPS server automatically upgrade the connection to use HTTP/2. It's good because it means, that ultimately our pages will load faster for users. 
+
+Important to note that the user that using to run Go application must have read permissions for both the cert.pem and key.pem files, otherwise ListenAndServeTLS() will return a permision denied error. By default the generate_cert.go tool grants read permission to all users for the cert.pem file, but read permission only to the owner of the key.pem file.
+
+For version control system, may to add an ignore rule by "eco 'tls/' >> .gitignore"
