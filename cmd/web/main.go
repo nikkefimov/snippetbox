@@ -1,6 +1,7 @@
 package main
 
 import (
+	"crypto/tls"
 	"database/sql"
 	"flag"
 	"html/template"
@@ -92,24 +93,25 @@ func main() {
 		sessionManager: sessionManager,
 	}
 
-	// Field ErrorLog for using logger by our server.
+	// Initialize a tls.Config struct to hold the non-default TLS settings we
+	// want the server to use. In this cae the only thing that we are changing
+	// is the curve preferences value, so that only elliptic curves with
+	// assembly implementations are used.
+	tlsConfig := &tls.Config{
+		CurvePreferences: []tls.CurveID{tls.X25519, tls.CurveP256},
+	}
+
+	// Set the server's TLSConfig field to use the tlsConfig variable just created.
 	srv := &http.Server{
-		Addr:     *addr,
-		ErrorLog: errorLog,
-		Handler:  app.routes(),
+		Addr:      *addr,
+		ErrorLog:  errorLog,
+		Handler:   app.routes(),
+		TLSConfig: tlsConfig,
 	}
 
 	// Information in terminal about server launching.
-	infoLog.Printf("Launching server on %s", *addr)
-
-	// Use the ListenAndServerTLS() method to start the HTTPS server
-	// Pass in the path to the TLS certificate and corresponding private key as
-	// the two parameters.
+	infoLog.Printf("Starting server on %s", *addr)
 	err = srv.ListenAndServeTLS("./tls/cert.pem", "./tls/key.pem")
-
-	// Method for logger and errors.
-	// err = srv.ListenAndServe() *old ListenAndServe*
-
 	errorLog.Fatal(err)
 }
 

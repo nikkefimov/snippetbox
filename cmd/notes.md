@@ -251,6 +251,8 @@ First it generates a 2048-bit RSA key pair, which is a cryptographically secure 
 
 Now application has a self signed TLS certificate and corresponding private key that can be use during development.
 
+04.08
+
 -Running a HTTPS server
 
 Now starting a HTTPS web server, just need make some changes in main.go and swap srv.ListenAndServe() to swap srv.ListenAndServe() instead.
@@ -267,3 +269,38 @@ A big plus of using HTTPS is that, if a client supports HTTP/2 connections - Go'
 Important to note that the user that using to run Go application must have read permissions for both the cert.pem and key.pem files, otherwise ListenAndServeTLS() will return a permision denied error. By default the generate_cert.go tool grants read permission to all users for the cert.pem file, but read permission only to the owner of the key.pem file.
 
 For version control system, may to add an ignore rule by "eco 'tls/' >> .gitignore"
+
+-Configure HTTPS settings
+
+Go has good fedault settings for HTTPS server, but it is possible to optimize and customize how the server behaves.
+Go support a few elliptic curves. but as of Go 1.18 only tls.CurveP256 and tls.X25519 have assembly implementations. The others are very CPU intensive, so omitting them helps ensure that our server will remain performant under heave loads. To make this tweak, create a tls.Config struct containing our non default TLS settings and add it to our http.Server struct before we start the server.
+
+update main.go
+
+TLS versions are also defined as constants in the crypto/tls package and Go's HTTPS server supports TLS versions 1.0 to 1.3.
+You can configure the minimum and maximum TLS versions via the tls.Config.MinVersion and MaxVersion fields. For instance, that all computers in your user base support TLS 1.2, but not TLS 1.3, then you may wish to use a cinfiguration like so:
+"tlsConfig := &tls.Config{
+    MinVersion: tls.VersionTLS12.
+    MacVersion: tls.VersionTLS12,
+}"
+
+-Restricting cipher suites
+The full range of cipher suites that Go supports are defined in the crypto/tls package constants.
+
+For some applications, it may be be desirable to limit your HTTPS server to only support some of these cipher suites. For example you might want to only support cipher suites which use ECDHE(forward secrecy) and not support weak cipher suites that use RC4, 3DES or CBC. You can do this via the tls.COnfig.CupherSuites field like so:
+
+tlsConfig := &tls.Config{
+    CipherSuites: []uint16{
+        tls.TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,
+        tls.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,
+        tls.TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305,
+        tls.TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305,
+        tls.TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,
+        tls.TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,
+    },
+}
+
+Go will automatically choose which of these cipher suites is actually used at runtime based on the cipher security, perfomance and client/server hardware support.
+
+Important to know, restricting the supported cipher suites to only include strong, modern, ciphers can mean that users with certain older browsers will not able to use your website. There is a balance to be struck between security and backwards compatibility and the right decision for you will depend on the technology typically used by your user base.
+Its also important to note that if a TLS 1.3 connection is negotiated any CipherSuites field in your tls.Config will be ignored. The reason for this is that all the cipher suites that Go supports fot TLS 1.3 connections are vonsidered to be a safe, so there is not much point in providing a mechanism to configure them. Basically, using tls.Config to set a custom list of supported cipher suites will affect TLS 1.0-1.2 connections only.
