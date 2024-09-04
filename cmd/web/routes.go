@@ -8,11 +8,11 @@ import (
 )
 
 func (app *application) routes() http.Handler {
-	// Initialize the router
+	// Initialize the router.
 	router := httprouter.New()
 
 	// Handler function which wramps our notFound() helper
-	// and then assign it as the custom handler for 404 Not Found responses
+	// and then assign it as the custom handler for 404 Not Found responses.
 	// Also set a custom handler for 405 Method Not Allowed responses by setting
 	// router.MethodNotAllowed in the same way too.
 	router.NotFound = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -29,17 +29,17 @@ func (app *application) routes() http.Handler {
 	dynamic := alice.New(app.sessionManager.LoadAndSave)
 
 	// Update these routes to use the new dynamic middleware chain followed by
-	// the appropriate handler function. Because the alice ThenFunc()
-	// method returns a http.Handler (rather than a http.HandlerFunc) we also
+	// the appropriate handler function. Because the alice ThenFunc(),
+	// method returns a http.Handler (rather than a http.HandlerFunc), we also
 	// need to switch to registreting the route using the router.Handler() method.
 	router.Handler(http.MethodGet, "/", dynamic.ThenFunc(app.home))
 	router.Handler(http.MethodGet, "/snippet/view/:id", dynamic.ThenFunc(app.showSnippet))
 	router.Handler(http.MethodGet, "/snippet/create", dynamic.ThenFunc(app.createSnippet))
 	router.Handler(http.MethodPost, "/snippet/create", dynamic.ThenFunc(app.snippetCreatePost))
 
-	// Create the middleware chain as normal
+	// Create the middleware chain as normal.
 	standart := alice.New(app.recoverPanic, app.logRequest, secureHeaders)
 
-	// Wrap the router with the middleware and return it as normal
+	// Wrap the router with the middleware and return it as normal.
 	return standart.Then(router)
 }

@@ -11,35 +11,35 @@ import (
 	"github.com/go-playground/form/v4"
 )
 
+// Helper serverError writes error msg in errorLog and send to user answer 500 "Internal server error".
 func (app *application) serverError(w http.ResponseWriter, err error) {
 	trace := fmt.Sprintf("%s\n%s", err.Error(), debug.Stack())
 	app.errorLog.Output(2, trace)
-
 	http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 }
 
-// Helper serverError writes error msg in errorLog and send to user answer 500 "Internal server error"
+// Helper clientError sends exact status code and exact discription to user, in next steps, later it will look like 400 "Bad request".
+// It happens when we have problem with user's request.
 func (app *application) clientError(w http.ResponseWriter, status int) {
 	http.Error(w, http.StatusText(status), status)
 }
 
-// Helper clientError sends exact status code and exact discription to user, in next steps, later it will look like 400 "Bad request"
-// It happens when we have problem with user's request
+// Helper notFound it's a something like convenient shell around clientError, which sends to user answer "404 error".
 func (app *application) notFound(w http.ResponseWriter) {
 	app.clientError(w, http.StatusNotFound)
 }
 
-// Helper notFound its a something like convenient shell around clientError, which sends to user answer "404 error"
+// Extract the appropriate set of templates from the cache depending on the page name,
+// if there is no entry of the requested template in the cache, then call the serverError() helper method.
 func (app *application) render(w http.ResponseWriter, r *http.Request, name string, td *templateData) {
-	// extract the appropriate set of templates from the cache depending on the page name
-	// if there is no entry of the requested template in the cache, then call the serverError() helper method
+
 	ts, ok := app.templateCache[name]
 	if !ok {
 		app.serverError(w, fmt.Errorf("the template %s doesn't exist", name))
 		return
 	}
 
-	// Initialize a new buffer
+	// Initialize a new buffer.
 	buf := new(bytes.Buffer)
 
 	err := ts.Execute(buf, td)
@@ -54,12 +54,12 @@ func (app *application) render(w http.ResponseWriter, r *http.Request, name stri
 func (app *application) newTemplateData(r *http.Request) *templateData {
 	return &templateData{
 		CurrentYear: time.Now().Year(),
-		// Add new flash message to the template data, if one exists.
+		// Add a flash message to the template data, if one exists.
 		Flash: app.sessionManager.PopString(r.Context(), "flash"),
 	}
 }
 
-// Create a new decodePostForm() helper method. The second parameter here, dst is the target
+// Create a new decodePostForm() helper method. The second parameter here, dst is the target,
 // destination that we want to decode the form data into.
 func (app *application) decodePostForm(r *http.Request, dst any) error {
 	// Call ParseForm() on the request, in the same wat that we did in our createSnippetPost handler.
@@ -71,11 +71,12 @@ func (app *application) decodePostForm(r *http.Request, dst any) error {
 	// Call Decode() on our decoder instance, passing the target destination as the first parameter.
 	err = app.formDecoder.Decode(dst, r.PostForm)
 	if err != nil {
-		// If we try to use a invalid target destination, the Decode() method
+
+		// If we try to use a invalid target destination, the Decode() method,
 		// will return an error with the type *form.InvalidDecoderError.
-		// Use error.As() to check for this and raise a panic rather than returning the error.
 		var invalidDecoderError *form.InvalidDecoderError
 
+		// Use error.As() to check for this and raise a panic rather than returning the error.
 		if errors.As(err, &invalidDecoderError) {
 			panic(err)
 		}

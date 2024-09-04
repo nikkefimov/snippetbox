@@ -5,10 +5,9 @@ import (
 	"net/http"
 )
 
-// flow of controul appplication lools like "secureHeader - servemux - application handler"
+// Flow of controul appplication lools like "secureHeader - servemux - application handler".
 func secureHeaders(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// this is split across multiple lines for readability
 		w.Header().Set("Content-Security-Policy",
 			"default-src 'self'; style-src 'self' fonts.googleapis.com; font-src fonts.gstatic.com")
 
@@ -21,8 +20,8 @@ func secureHeaders(next http.Handler) http.Handler {
 	})
 }
 
-// use the information logger that we created earlier to record the IP address of the
-// user and which URL and method are being requested
+// Use the information logger that we created earlier to record the IP address of the
+// user and which URL and method are being requested.
 func (app *application) logRequest(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		app.infoLog.Printf("%s - %s %s %s", r.RemoteAddr, r.Proto, r.Method, r.URL.RequestURI())
@@ -31,6 +30,7 @@ func (app *application) logRequest(next http.Handler) http.Handler {
 	})
 }
 
+// recoverPanic method.
 func (app *application) recoverPanic(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer func() {

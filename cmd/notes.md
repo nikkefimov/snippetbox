@@ -237,4 +237,17 @@ That change means that no longer need to check for the flash message within the 
 
 update helpers.go, edit handlers.go
 
-03.08
+03.08 Security inprovements
+
+Make some improvements to application, secure data during transit and make server better to some common types of denial of service attacks.
+
+-Generating a self-signed TLS certificate.
+
+For MacOS, FreeBSD or Linux the generate_cert.go file should be located under: /usr/local/go/crypto/tls/
+
+For generate certificate execute in terminal in folder tls: go run /usr/local/go/src/crypto/tls/generate_cert.go --rsa-bits=2048 --host=localhost
+
+First it generates a 2048-bit RSA key pair, which is a cryptographically secure public key and private key. It then stroes the private key in a key.pem file and generates a self signed TLS certificate for the host localhost containing the public key, which is stores in a cert.pem. Both the private key and certificate are PEM encoded, which is the standart format used by most TLS implementations.
+
+Now application has a self signed TLS certificate and corresponding private key that can be use during development.
+
