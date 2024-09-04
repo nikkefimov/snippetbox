@@ -304,3 +304,31 @@ Go will automatically choose which of these cipher suites is actually used at ru
 
 Important to know, restricting the supported cipher suites to only include strong, modern, ciphers can mean that users with certain older browsers will not able to use your website. There is a balance to be struck between security and backwards compatibility and the right decision for you will depend on the technology typically used by your user base.
 Its also important to note that if a TLS 1.3 connection is negotiated any CipherSuites field in your tls.Config will be ignored. The reason for this is that all the cipher suites that Go supports fot TLS 1.3 connections are vonsidered to be a safe, so there is not much point in providing a mechanism to configure them. Basically, using tls.Config to set a custom list of supported cipher suites will affect TLS 1.0-1.2 connections only.
+
+-Connection timeouts
+
+Improve the resilency of server by adding some timeout settings: "IdleTimeout, ReadTimeout, WriteTimeout".
+All three of these timeouts - IdleTimeout, ReadTimeout and WriteTimeout - are server-wide settings which act on the underlying connection and apply to all requests irrespective of their handler or URL.
+
+*The IdleTimeout setting.
+By default, Go enable keep-alives on all accepted connections. This helps reduce latency because a client can reuse the same connection for multiple requests without having to reapeat the handshake.
+By default, keep-alive connections will be automatically closed after a couple of minutes (depending on your OS). This helps to clear-up connections where the user has unexpectedly disappeared - e.g. due to a power cut cliend-side.
+There is no way to increase this default (unless you roll your own net.Listener), but you can reduce it via the IdleTimeout setting. In our case, we have set IdleTimeout to 1 minute, which means that all keep-alive connections will be automatically closed after 1 minute of inactivity.
+*The ReadTimetout setting.
+In code we have also set the ReadTimeout setting to 5 seconds. This means that if the request header or body are still being read 5 second after the request is first accepted, the Go will close the underlying connection. Because this is a 'hard' closure on the connection the user will not receive any HTTP(S) response. Setting a short ReadTimeout period helps to mitigate the risk from slow-client attacks suck as Slowloris - which could otherwise keep a connection open endefinitely by sending partial incomplete, HTTP(S) requests. (If you set ReadTimeout bud dont set IdleTimeout, then IdleTimeout will default to using the same setting as ReadTimeout). Generally, recommendation is to avoyd any ambiguity and always set an explicit IdleTimeout value for your server.
+*The WriteTimeout setting.
+The WriteTimeout setting will close the underlying connection if our server attempts to write to the connection after a given period(in our code its 10 seconds). But this behaves slightly defferently depending on the protocol being used.
+For HTTP, if some data is written to the connection more than 10 seconds after read of the request header finished, Go will close the underlying connection instead of writing thedata.
+For HTTPS connections, if some data is written to the connection mroe than 10 seconds after the request is first accpeted, Go will close the underlying connection instead of writing the data. This means that if you are using HTTPS its sensible to set WriteTimeout to a value greater than ReadTimeout.
+Therefore, the idea of WriteTimeout is generally not to prevent long-running handlers, but to prevent the data that the handler returns from taking too long to write.
+
+*The MaxHeaderBytes setting.
+The http.Server object also provides a MaxHeaderBytes field, which you can use to control the maximum number of bytes the server will read when parsing request headers. Bydefualt, Go allows a maximum header length of 1 MB. To change (for 0.5MB) this:
+" srv := &http.Server{
+    Addr: *addr,
+    MaxHeaderBytes: 524288,
+}"
+
+If MaxHeaderBytes is exceeded then the user will automatically be sent a 431 Request Header Fields Too Large response.
+
+updage main.go
