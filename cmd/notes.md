@@ -34,12 +34,12 @@ file go.mod updated according with installed SQL driver
 file go.sum was created after install SQL driver, this file contains cryptographic checksums representing the contents of the required packages. Unlike the go.mod file, the go.sum file is not intended to be edited, and you should not normally opet it, much less edit it. This file accomplishes two useful taks: If you run the go mod veify command from a terminal, Go will check if the checksums of the of the dowloaded packages on your computer match the entries in go.sum, so you can be sure that they have not beed changed.
 If someone else need to dowload all the dependencies for the project by running the go mod dowload command, will get an error message if there is any mismatch between the dependencies being downloaded and the checksums in the file.
 
-2.07 Creat connections in MySQL, add sql.Open() func
+2.08 Creat connections in MySQL, add sql.Open() func
 
 Data source name for second parametr in sql.Open() func we can find github.com/go-sql-driver/mysql#dsn-data-source-name.
 File main.go was updated
 
-3.07 creat MySQL model for work with a database in project
+3.08 creat MySQL model for work with a database in project
 
 create new folder mysql and two new files .go in folder models and mysql
 
@@ -47,17 +47,17 @@ in file models.go we define types of top level data, which our database model wi
 
 file snippets.go contains code for work with notes with MySQL database, assign new type here SnippetModel
 
-7.07 update file snippets.go
+7.08 update file snippets.go
 
 edit method SnippetModel.Insert(), create new snippet in table snippets and return new snippet's id
 make SQL request and update code in snippets.go, use interface sql.Result which we get after execution DB.Exec(). 
 We have two methods from sql.Result, LastInsertId() and RowsAffected(), not all driver support these methods, PostgeSQL doesnt work with LastInsertId(), have to check driver's manual before use
 
-8.07 output snippet from the database by snippet's ID from the URL
+8.08 output snippet from the database by snippet's ID from the URL
 
 edit method GET in file snippets.go
 
-13.07 test display latest snippets from DB
+13.08 test display latest snippets from DB
 
 17.08 display content from MySQL into HTML template
 
@@ -80,7 +80,7 @@ work with operators and functions from Go template builder, was used {{define}},
 
 updated template files for main page, tested - OK
 
-17.07 template caching in Go
+17.08 template caching in Go
 avoid processes the template files using the template.ParseFiles() function everytime when a webpage is displayed by processing the files once druing application startup and storing the processed templates in a cache in memory
 
 put a code which reapets in handlers home and showSnippet in helper function
@@ -314,8 +314,10 @@ All three of these timeouts - IdleTimeout, ReadTimeout and WriteTimeout - are se
 By default, Go enable keep-alives on all accepted connections. This helps reduce latency because a client can reuse the same connection for multiple requests without having to reapeat the handshake.
 By default, keep-alive connections will be automatically closed after a couple of minutes (depending on your OS). This helps to clear-up connections where the user has unexpectedly disappeared - e.g. due to a power cut cliend-side.
 There is no way to increase this default (unless you roll your own net.Listener), but you can reduce it via the IdleTimeout setting. In our case, we have set IdleTimeout to 1 minute, which means that all keep-alive connections will be automatically closed after 1 minute of inactivity.
+
 *The ReadTimetout setting.
 In code we have also set the ReadTimeout setting to 5 seconds. This means that if the request header or body are still being read 5 second after the request is first accepted, the Go will close the underlying connection. Because this is a 'hard' closure on the connection the user will not receive any HTTP(S) response. Setting a short ReadTimeout period helps to mitigate the risk from slow-client attacks suck as Slowloris - which could otherwise keep a connection open endefinitely by sending partial incomplete, HTTP(S) requests. (If you set ReadTimeout bud dont set IdleTimeout, then IdleTimeout will default to using the same setting as ReadTimeout). Generally, recommendation is to avoyd any ambiguity and always set an explicit IdleTimeout value for your server.
+
 *The WriteTimeout setting.
 The WriteTimeout setting will close the underlying connection if our server attempts to write to the connection after a given period(in our code its 10 seconds). But this behaves slightly defferently depending on the protocol being used.
 For HTTP, if some data is written to the connection more than 10 seconds after read of the request header finished, Go will close the underlying connection instead of writing thedata.
@@ -331,4 +333,50 @@ The http.Server object also provides a MaxHeaderBytes field, which you can use t
 
 If MaxHeaderBytes is exceeded then the user will automatically be sent a 431 Request Header Fields Too Large response.
 
-updage main.go
+update main.go
+
+-User authentication
+
+*A user will register by visiting a form at /user/signup and entering name, email, address and password. This information in a new users database table.
+*A user will log in by visiting a form at /user/login and entering email address and password.
+*Then check the dayabase to see if the email and password entered match one of the users in the users table. If there is a match, user has authenticated successfully and we add the relevant id value for the user to their session data, using the key "authenticatedUserID".
+*When we receive any subsequent requests, we can check the user's session daya for a "authenticatedUserID" value. If it exists, we know that the user has already successfully logged in. We can keep checking this until the session expires, when the user will need to log in again. If there is no "authenticatedUserID" in the session, we know that the user is not logged in.
+
+-Routes setup
+Method  Pattern            Handler           Action
+GET     /                  home              Display    the home page
+GET     /snippet/view/:id  showSnippet       Display a specific snippet
+GET     /snippet/create    snippetCreate     Display a HTML form for creating a new snippet
+POST    /snippet/create    snippetCreatePost Create a new snippet
+GET     /user/signup       userSignup        Display a HTML form for signing up a new user
+POST    /user/signup       userSignupPost    Create a new user
+GET     /user/login        userLogin         Display a HTML form for logging in a user
+POST    /user/login        userLoginPost     Authenticate and login the user
+POST    /user/logout       userLogoutPost    Logout the user
+GET     /static/*filepath  http.FileServer   Serve a specific static file
+
+updata handlers.go and routes.go
+
+-Creating a users model
+Set up a new users database table and a database model to access it.
+
+*Creating new sql table 'users' in terminal
+
+"Use snippetbox;
+
+CREATE TABLE users (
+    id INTEGER NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(255) NOT NULL,
+    email VARCHAR(255) NOT NULL,
+    hashed_password CHAR(60) NOT NULL,
+    created DATETIME NOT NULL
+);
+
+ALTER TABLE users ADD CONSTRAINT users_uc_email UNIQUE (email); "
+
+The id field is an autoincrementing integer field and the primary key for the table, This means that the users ID values are guaranteed to be unique positive integers.
+The type of hashed_password field, because storing hashes of the user password in the database, not the password themselves and the hashed versions will always be exactly 60 characters long.
+Added a UNIQUE constraint on the email column, will not up with two users who have the same email address.
+
+*Building the model in Go
+update errors.go, create users.go, update main.go

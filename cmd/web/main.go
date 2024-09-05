@@ -21,10 +21,12 @@ import (
 // Field templateCache in dependencies struct, allow access to cache in all handlers.
 // Handlers are in the same package, so we can define the functions as method against this struct, for access to the loggers.
 // Add a sessionManager field to the application struct.
+// Add a new users field to the application struct.
 type application struct {
 	errorLog       *log.Logger
 	infoLog        *log.Logger
 	snippets       *models.SnippeModel
+	users          *models.UserModel
 	templateCache  map[string]*template.Template
 	formDecoder    *form.Decoder
 	sessionManager *scs.SessionManager
@@ -84,10 +86,12 @@ func main() {
 	sessionManager.Cookie.Secure = true
 
 	// Structure with dependency injection.
+	// Initialize a models.UserModel instance and add it to the application dependencies.
 	app := &application{
 		errorLog:       errorLog,
 		infoLog:        infoLog,
 		snippets:       &models.SnippeModel{DB: db},
+		users:          &models.UserModel{DB: db},
 		templateCache:  templateCache,
 		formDecoder:    formDecoder,
 		sessionManager: sessionManager,
