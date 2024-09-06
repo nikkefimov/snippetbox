@@ -15,7 +15,7 @@ Information about constants: "pkg.go.dev/net/http#pkg-constants"
 
 now have information about exact string in code in whole project with a problem, before had just information about string in helpers.go which says about problem is
 
-23.07 correction of a specially made error earlier in type of file for the logger test and errors
+23.07 correction of a deliberate error earlier in type in file for the logger test and errors
 
 mv ui/html/home.page.bak ui/html/home.page.tmpl. Tested - OK
 
@@ -378,5 +378,45 @@ The id field is an autoincrementing integer field and the primary key for the ta
 The type of hashed_password field, because storing hashes of the user password in the database, not the password themselves and the hashed versions will always be exactly 60 characters long.
 Added a UNIQUE constraint on the email column, will not up with two users who have the same email address.
 
-*Building the model in Go
+*Building the model "users" in Go
 update errors.go, create users.go, update main.go
+
+-User signup and password encryption
+
+In signup form, we are not re-displaying the password in the form fails validation, because we dont want there to be any risk of ther browser (or other intermediary) caching the plain-text password entered by the user.
+
+create signup.page.tmpl, update handlers.go
+
+*Validation the user input
+
+update validator.go and handlers.go
+
+When form is submitted the data will end up being posted to the userSignupPost handler, task for the handler will be to validate the data to make sure that it is sane and sensible before insert it into the database.
+1- Check that th provided name, email address and password are not blank. 2- Sanity check the format of the email address. 3- Ensure that the password is at least 8 characters long. 4- Make sure that the email address is not already in use.
+
+First three checks heading by validator.go file with methods MinChars() and Matches().
+
+In file validator.go, EmailRX is a regular expresssion pattern, means is the one currently recommended by the W3C and Web Hypertext Application Technology Working Group. EmailRX regexp pattern is written as an interpreted string literal we need to double-escape special characters in the regexp with "\\" for it to work correctly.
+
+*Bcrypt
+Hugely important doesnt contain the plain-text versions of user's passwords. Good practice to store a one-way hash of the password, derived with a computationally expensive key-derivation function such as Argon2, scrypt or bcrypt. Go has implementations of all 3 algorithms in the pkg.go.dev/crypto package. A plus-point of the bcrypt implementation specifically is that it includes helper functions specifically designed for hashing and checking password.
+
+"go get -u golang.org/x/crypto/bcrypt"
+
+There are two functions, first is the bcrypt.GenerateFromPassword(), which create a hash of given plain-text password.
+
+Second is bcrypt.CompareHashAndPassword(), function will return nil if the plain-text password matches a particular hash, or an error if they dont match.
+
+*Storing the user details.
+First have to store the bcrypt hash of the password(not the password itself) and second, need to manage the potential error caused by a duplicate email violating the UNIQUE constraint that we added to the table.
+All errors returned by MySQL have a particular code, which we can use to triage what has caused the error(full list erorrs https://dev.mysql.com/doc/mysql-errors/8.0/en/). Duplicate email - the error code used will be 1062 (ER_DUP_ENTRY).
+
+update users.go and handlers.go
+
+Some databases provide built-in function that use for password hashing and verification instead of implementation in Go.
+Good idea to avoid using these for two reasons:
+
+*They tend to be vulnerable to side-channel timing attacks due to string comparison time not being constant at least in PostgreSQL and MySQL.
+*Unless you are very careful, sending a plaint-text password to your database risks the password being accidentally recorded in one of your database logs. A couple of high profile examples of this happening were they Github and Twitter incidents in 2018.
+
+Alternatives for checking email duplicates, option to add an UserModel.EmailTaken() methdo to model which checks to see if a user with a specific email alrady exists. Call this before try to insert a new record and add a validation error message to the form as appropriate. If two users try to sign up with the same email address at exactly the same time, both submissions will pass the validation check but ultimately only one ISERT into the MySQL database will succeed. The other will violate UNIQUE constraint and the user would end up receiving a 500 Internal Server Error response.
