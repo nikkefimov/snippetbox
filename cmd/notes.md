@@ -381,7 +381,7 @@ Added a UNIQUE constraint on the email column, will not up with two users who ha
 *Building the model "users" in Go
 update errors.go, create users.go, update main.go
 
--User signup and password encryption
+6.08 User signup and password encryption
 
 In signup form, we are not re-displaying the password in the form fails validation, because we dont want there to be any risk of ther browser (or other intermediary) caching the plain-text password entered by the user.
 
