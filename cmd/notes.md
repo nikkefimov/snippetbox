@@ -420,3 +420,19 @@ Good idea to avoid using these for two reasons:
 *Unless you are very careful, sending a plaint-text password to your database risks the password being accidentally recorded in one of your database logs. A couple of high profile examples of this happening were they Github and Twitter incidents in 2018.
 
 Alternatives for checking email duplicates, option to add an UserModel.EmailTaken() methdo to model which checks to see if a user with a specific email alrady exists. Call this before try to insert a new record and add a validation error message to the form as appropriate. If two users try to sign up with the same email address at exactly the same time, both submissions will pass the validation check but ultimately only one ISERT into the MySQL database will succeed. The other will violate UNIQUE constraint and the user would end up receiving a 500 Internal Server Error response.
+
+7.08 User login
+
+update validator.go, handlers.go, create new tmpl file for login page.
+
+The core part of verification logic in the UserModel.Authenticate() method.
+*First it should retrieve the hashed password associated with the email address from our MySQL users table. If the email doent exist in the database, or its for a user that has beed deactivated, then return the ErrInvalidCredentials error.
+*Otherwise, we want to compare the hashed password from the users table with the plain-text password that the user provided when loggin in. If they dont match we want to return the ErrInvalidCredentials error again. But if they do match, we want to return the user's id value from the database.
+
+update users.go (CompareHashAndPassword)
+
+If the login details are valid, then to add the user's id to session data so that for future requests we know that user has authenticated successfully.
+
+update handlers.go (userLoginPost)
+
+The SessionManager.RenewToken() method in the code will change the ID of the current user's session but retain any data associated with the session. Its good practice to do this before login to mitigatethe risk of a session fixation attacls. For more background and information on this: OWASP Session Management Cheat Sheet.
