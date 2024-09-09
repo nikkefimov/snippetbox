@@ -11,10 +11,6 @@ func (app *application) routes() http.Handler {
 	// Initialize the router.
 	router := httprouter.New()
 
-	// Handler function which wramps our notFound() helper
-	// and then assign it as the custom handler for 404 Not Found responses.
-	// Also set a custom handler for 405 Method Not Allowed responses by setting
-	// router.MethodNotAllowed in the same way too.
 	router.NotFound = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		app.notFound(w)
 	})
@@ -23,26 +19,24 @@ func (app *application) routes() http.Handler {
 	fileServer := http.FileServer(http.Dir("./ui/static"))
 	router.Handler(http.MethodGet, "/static/*filepath", http.StripPrefix("/static", fileServer))
 
-	// Create a new middleware chain contaiting the middleware specifigc to dynamic
-	// application routes, for now this chain will only contain the LoadAndSave
-	// session middleware.
+	// Unprotected application routes using the "dynamic" middleware chain.
 	dynamic := alice.New(app.sessionManager.LoadAndSave)
 
-	// Update these routes to use the new dynamic middleware chain followed by
-	// the appropriate handler function. Because the alice ThenFunc(),
-	// method returns a http.Handler (rather than a http.HandlerFunc), we also
-	// need to switch to registreting the route using the router.Handler() method.
+	// Unprotected "dynamic" routes.
 	router.Handler(http.MethodGet, "/", dynamic.ThenFunc(app.home))
 	router.Handler(http.MethodGet, "/snippet/view/:id", dynamic.ThenFunc(app.showSnippet))
-	router.Handler(http.MethodGet, "/snippet/create", dynamic.ThenFunc(app.createSnippet))
-	router.Handler(http.MethodPost, "/snippet/create", dynamic.ThenFunc(app.snippetCreatePost))
-
-	// Add the five new routes, all of which use our 'dynamic' middleware chain.
 	router.Handler(http.MethodGet, "/user/signup", dynamic.ThenFunc(app.userSignup))
 	router.Handler(http.MethodPost, "/user/signup", dynamic.ThenFunc(app.userSignupPost))
 	router.Handler(http.MethodGet, "/user/login", dynamic.ThenFunc(app.userLogin))
 	router.Handler(http.MethodPost, "/user/login", dynamic.ThenFunc(app.userLoginPost))
-	router.Handler(http.MethodPost, "/user/logout", dynamic.ThenFunc(app.userLogoutPost))
+
+	// Protected (authenticated-onlu) application routes, using a new "protected"
+	// middleware chain which includes the requireAuthentication middleware.
+	protected := dynamic.Append(app.requireAuthentication)
+
+	router.Handler(http.MethodGet, "/snippet/create", protected.ThenFunc(app.createSnippet))
+	router.Handler(http.MethodPost, "/snippet/create", protected.ThenFunc(app.snippetCreatePost))
+	router.Handler(http.MethodPost, "/user/logout", protected.ThenFunc(app.userLogoutPost))
 
 	// Create the middleware chain as normal.
 	standart := alice.New(app.recoverPanic, app.logRequest, secureHeaders)

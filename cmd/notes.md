@@ -436,3 +436,45 @@ If the login details are valid, then to add the user's id to session data so tha
 update handlers.go (userLoginPost)
 
 The SessionManager.RenewToken() method in the code will change the ID of the current user's session but retain any data associated with the session. Its good practice to do this before login to mitigatethe risk of a session fixation attacls. For more background and information on this: OWASP Session Management Cheat Sheet.
+
+08.08 User logout
+
+Essentially all need to do is remove the "authenticatedUserID" from the session. Its good practice to renew the session ID again and also add a flash message to the session data to confirm to the user that they have been logged out.
+
+update handlers.go
+
+-User authorization
+
+*Only authenticated users can create a new snippet.
+*The contents of the navigation bar changes depending on whether a user is authenticated(logged in) or not.
+
+Specifically: 
+Authenticated users should see links to 'Home', 'Create snippet' and 'logout'. Unauthenticated users should see links to 'Home', 'Signup' and 'Login'. Check whether a request is being made by an authenticated user or not by checking for the existence of an "authenticatedUserID" value in their session data.
+
+update helpers.go
+
+Check whether or not the request is coming from an authenticated(logged in) user by simply calling this isAuthenticated() helper. After, to find a way to pass this information to our HTML templates, so that we can toggle the contents of the navigation bar appropriately.
+
+update templates.go (add a new field in templateData struct)
+
+update helpers.go (update helper newTemplateData)
+
+update base.layout.tmpl. The {{if ...}} action considers empty values (false, 0, any nil pointer or interface value, any array, slice, map or string of length zero) to be false.
+
+*Restricting access.
+
+Update middleware.go file.
+
+Unauthenticated user could still create a new snippet by visiting the https://localhost:4000/snippet/create page directly.
+Fix this, if an unauthenticated user tries to visit any routes with the URL path /snippet/create they are redirected to /user/login instead. Do this via middleware. 
+
+Update routes.go to protect specific routes.
+
+ GET /snippet/create and POST /snippet/create routes. And there is not much point to logging out a user if they re not logged in, so it makes sense to use it on the POST /user/logout rout as well.
+
+Rearrange application routes into two 'groups'. 
+*The first will contain 'unprotected' routes and use existing dynamic middleware chain. 
+*The second will contain 'protected' routes and use a new protected middleware chain - consisting of the dynamic middleware chain plus new requireAuthentication() middleware.
+
+Now, visiting https://localhost:4000/snippet/create directly in browers, should immediately redirected to the login form instead. Also with curl that unauthenticated users are redirected for the POST /snippet/create route too.
+"$ curl -ki -X POST https://localhost:4000/snippet/create".
