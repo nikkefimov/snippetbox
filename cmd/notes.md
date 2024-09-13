@@ -478,3 +478,11 @@ Rearrange application routes into two 'groups'.
 
 Now, visiting https://localhost:4000/snippet/create directly in browers, should immediately redirected to the login form instead. Also with curl that unauthenticated users are redirected for the POST /snippet/create route too.
 "$ curl -ki -X POST https://localhost:4000/snippet/create".
+
+-CSRF protection.
+
+Token-based mitigation.
+Two most popular packages for stopping CSRF attacks in Go web applications are gorilla/csrf and justinas/nosurf. They both do roughly same thing, using double-submit cookie pattern to prevent attacks. A random CSRF token is generated and sent to the user in a CSRF cookie. CSRF tokent is then added to a hidden field in each HTML form that's vulnerable to CSRF.
+
+Install the Nosurf package.
+"$ go get github/justinas/nosurf@v1" 
