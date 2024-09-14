@@ -19,8 +19,9 @@ func (app *application) routes() http.Handler {
 	fileServer := http.FileServer(http.Dir("./ui/static"))
 	router.Handler(http.MethodGet, "/static/*filepath", http.StripPrefix("/static", fileServer))
 
-	// Unprotected application routes using the "dynamic" middleware chain.
-	dynamic := alice.New(app.sessionManager.LoadAndSave)
+	// Unprotected application routes using the 'dynamic' middleware chain.
+	// Use the nosurf middleware on all 'dynamic' routes.
+	dynamic := alice.New(app.sessionManager.LoadAndSave, noSurf)
 
 	// Unprotected "dynamic" routes.
 	router.Handler(http.MethodGet, "/", dynamic.ThenFunc(app.home))
@@ -32,6 +33,8 @@ func (app *application) routes() http.Handler {
 
 	// Protected (authenticated-onlu) application routes, using a new "protected"
 	// middleware chain which includes the requireAuthentication middleware.
+	// The 'protected' middleware chain appends to the 'dynaic' chain
+	// the noSurf middleware will also be used on the tree routes below too.
 	protected := dynamic.Append(app.requireAuthentication)
 
 	router.Handler(http.MethodGet, "/snippet/create", protected.ThenFunc(app.createSnippet))

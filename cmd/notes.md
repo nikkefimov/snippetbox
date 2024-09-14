@@ -479,10 +479,25 @@ Rearrange application routes into two 'groups'.
 Now, visiting https://localhost:4000/snippet/create directly in browers, should immediately redirected to the login form instead. Also with curl that unauthenticated users are redirected for the POST /snippet/create route too.
 "$ curl -ki -X POST https://localhost:4000/snippet/create".
 
--CSRF protection.
+<b>-CSRF protection.</b>
+
+Protect application from cross-site request forgery(CSRF) attacks, its a type of attack where a malicious third-party website sends state-changing HTTP requests to your website.
+
+Application the main risk is:
+*A user logs into application. Session cookie is set to persist for 12 hours, so they will remain logged in even if they navigate away from the application. *The user then goes to a malicious website which contains some code that sends a cross-site request to POST /snippet/create endpoint add a new snippet to database. The session cookie will be sent along with this request. *Because th request includes the session cookie, application will interpret the request as coming from a logged0in user an it will process the request with that user's privileges. So completely unknow to the user, a new snippet will be added to database.
+
+SameSite cookies. One mitigation that we can take to prevent CSRF attacks is to maje sure that the SameSite attrivute is appropriately set on our session cookie. By default the alexedwards/scs package that we are using always sets SameSite=Lax on the session cookie. This means that the session cookie will not be sent by the user's browser for any unsafe cross-site requests. (cross-site requests with the HTTP methods POST, PUT and DELETE).
 
 Token-based mitigation.
 Two most popular packages for stopping CSRF attacks in Go web applications are gorilla/csrf and justinas/nosurf. They both do roughly same thing, using double-submit cookie pattern to prevent attacks. A random CSRF token is generated and sent to the user in a CSRF cookie. CSRF tokent is then added to a hidden field in each HTML form that's vulnerable to CSRF.
 
 Install the Nosurf package.
 "$ go get github/justinas/nosurf@v1" 
+
+update middleware.go and routes.go
+
+To make the form submission work, need to use the nosurf.Token() function to get the CSRF token and add it to a hidden csrf_token field in each of our forms. Add a new CSRFToken field to templateData struct. The logout form can potentially appear on every page, it makes sense to add the CSRF token to the template ata automatically via our newTemplateData() helper. This mean that its a available to our templates each time we render a page.
+
+update templates.go and helper.go
+
+update all files .tmpl with a CSRF token in a hidden field.
