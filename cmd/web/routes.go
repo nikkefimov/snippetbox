@@ -21,7 +21,7 @@ func (app *application) routes() http.Handler {
 
 	// Unprotected application routes using the 'dynamic' middleware chain.
 	// Use the nosurf middleware on all 'dynamic' routes.
-	dynamic := alice.New(app.sessionManager.LoadAndSave, noSurf)
+	dynamic := alice.New(app.sessionManager.LoadAndSave, noSurf, app.authenticate)
 
 	// Unprotected "dynamic" routes.
 	router.Handler(http.MethodGet, "/", dynamic.ThenFunc(app.home))

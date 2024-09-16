@@ -173,7 +173,7 @@ In contrast, the r.Form map is populated for all requests(irrespective of their 
 
 Using the f.Form map can be useful if your application sends data in a HTML form and in the URL, or you have an application that is agnostic about how parameters are passed. Our case this things are not applicable, expect our form data to be sent in the request body only, so it is for sensible for us to acces it via r.PostForm
 
-1.09 Validation form data
+<b>Validation form data</b>
  
  -Update handlers.go, create a map
 
@@ -237,7 +237,7 @@ That change means that no longer need to check for the flash message within the 
 
 update helpers.go, edit handlers.go
 
-03.08 Security inprovements
+<b>Security inprovements</b>
 
 Make some improvements to application, secure data during transit and make server better to some common types of denial of service attacks.
 
@@ -251,9 +251,7 @@ First it generates a 2048-bit RSA key pair, which is a cryptographically secure 
 
 Now application has a self signed TLS certificate and corresponding private key that can be use during development.
 
-04.08
-
--Running a HTTPS server
+<b>Running a HTTPS server</b>
 
 Now starting a HTTPS web server, just need make some changes in main.go and swap srv.ListenAndServe() to swap srv.ListenAndServe() instead.
 After that, the only difference is that it will now be talking HTTPS instead of HTTP (https://localhost:4000/)
@@ -381,7 +379,7 @@ Added a UNIQUE constraint on the email column, will not up with two users who ha
 *Building the model "users" in Go
 update errors.go, create users.go, update main.go
 
-6.08 User signup and password encryption
+<b>User signup and password encryption</b>
 
 In signup form, we are not re-displaying the password in the form fails validation, because we dont want there to be any risk of ther browser (or other intermediary) caching the plain-text password entered by the user.
 
@@ -421,7 +419,7 @@ Good idea to avoid using these for two reasons:
 
 Alternatives for checking email duplicates, option to add an UserModel.EmailTaken() methdo to model which checks to see if a user with a specific email alrady exists. Call this before try to insert a new record and add a validation error message to the form as appropriate. If two users try to sign up with the same email address at exactly the same time, both submissions will pass the validation check but ultimately only one ISERT into the MySQL database will succeed. The other will violate UNIQUE constraint and the user would end up receiving a 500 Internal Server Error response.
 
-7.08 User login
+<b>User login</b>
 
 update validator.go, handlers.go, create new tmpl file for login page.
 
@@ -437,7 +435,7 @@ update handlers.go (userLoginPost)
 
 The SessionManager.RenewToken() method in the code will change the ID of the current user's session but retain any data associated with the session. Its good practice to do this before login to mitigatethe risk of a session fixation attacls. For more background and information on this: OWASP Session Management Cheat Sheet.
 
-08.08 User logout
+<b>User logout</b>
 
 Essentially all need to do is remove the "authenticatedUserID" from the session. Its good practice to renew the session ID again and also add a flash message to the session data to confirm to the user that they have been logged out.
 
@@ -479,7 +477,7 @@ Rearrange application routes into two 'groups'.
 Now, visiting https://localhost:4000/snippet/create directly in browers, should immediately redirected to the login form instead. Also with curl that unauthenticated users are redirected for the POST /snippet/create route too.
 "$ curl -ki -X POST https://localhost:4000/snippet/create".
 
-<b>-CSRF protection.</b>
+<b>CSRF protection.</b>
 
 Protect application from cross-site request forgery(CSRF) attacks, its a type of attack where a malicious third-party website sends state-changing HTTP requests to your website.
 
@@ -501,3 +499,41 @@ To make the form submission work, need to use the nosurf.Token() function to get
 update templates.go and helper.go
 
 update all files .tmpl with a CSRF token in a hidden field.
+
+<b>Using request context</b>
+
+Make sure that the "authenticatedUserID" value is real, valid, value. The best approach would be to carry check in some middleware to determine whether the current request is from an uathenticated user or not, then pass that information down to all subsequent handlers in the chain.
+
+Every http.Request that middleware and handlers process has a context.Context object embedded in it, which use to store information during the lifetime of the request. Check if a user is authenticated once in some middleware and if they are, then maje this information available to all our other middleware and handlers.
+
+-How request context works.
+
+*First use the r.Context() method to retrieve the existing context from a request and assign it to the ctx variable.
+*Then use the context.WithValue() method to create a new copy of the existing context, containing the key "isAuthenticated" and a value of true.
+*Then use the r.WithContext() method to create a copy of the request containing new context.
+(dont need to update the context for a request directly, making a new copy of the http.Request object with new context in it).
+
+-Request context for authentication/authorization.
+
+Updating the UserModel.Exists() method, that it returns ture if a user with a specific ID exists in our users table and false otherwise.
+
+update users.go
+
+Create context.go file, this will define a custom contextKey type and an isAuthenticatedContextKey variable, so that have a unique key can use to store and retrive the authentication status from a request context(without the risk of naming collisions). 
+
+update middleware.go, create a new authenticate() method which:
+*Retrieves the user's ID from their session data.
+*Checks the database to see if the ID corresponds to a valid user using the UserModel.Exists() method.
+*Updates the request context to include an isAuthenticatedContextKey key with the value true.
+
+*When dont have a valid authenticated user, we pass the original and unchanged *http.Request to the next handler in the chain.
+*When a valid authenticated user, we create a copy of the request with a isAuthenticatedContextKey key and true value stored in the request context. Then pass this copy of the *http.Request to the next handler in the chain.
+
+Update dynamic middleware chain in routes.go
+
+Update isAuthenticated() helper in helpers.go, that instead of checking the session data it now checks the request context to determine if a user is a authenticated or not.
+
+If there is not a value in the request contet with the isAuthenticatedContextKey key, or the underlying value is not a bool, then this type assertion will fail. In that case we take a 'safe' fall back and return false(assume that the user is not authenticated).
+
+When application is running, if log in as a certain user and browse around the application and if delete the record for the user which logged in from the database, application is now smart enough to recognize that the user has been deleted and after refrest the page, user now will find as a treated because unauthenticated (logged-out) user.
+
