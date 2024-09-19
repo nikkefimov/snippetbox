@@ -579,3 +579,14 @@ Quickly building an executable binary in /tmp directory, copying over the TLS ce
   $ cd /tmp/
   $ ./web
 "
+
+<b>Using generics</b>
+
+First version of the language to support generics is 1.18, also know by the ore technical name of parametric polymorphism.
+The new generics functionality allows to write code that works with different concrete types.
+
+Replace PermittedInt() with a generic PermittedValue() function in file validator.go
+
+Update snippetCreatePost handler in file handlers.go to use the new PermittedValue() function in the validation checks.
+
+In older versions of Go, if you wanted to check whether a []string slice and an []int slice contained a particular value you would need to write two separate functions - one function for the string type and another for the int. With generics its a possible to write a single contains() function that will work for string, int and all other comparable types.
