@@ -550,3 +550,32 @@ In version 1.16 was the embed package, which makes it possible to embed external
 
 create efs.go
 
+*The comment directive must be placed immediately above the variable in which you want to store the embedded files.
+*The directive has the general format "go:embed <paths>", and its OK to specife multiple paths in one directive. The paths should be relative to the source code file containing the directive. So, "go:embed "static "html" embeds the directories ui/static and ui/html from project.
+*Use the "go:embed" directive on global variables at package level, not within functions or method. If use it within a function or method, you will get the error "go:embed cannot apply to var inside func" at compile time.
+*Paths cannot contain . or .. elements, nor may they begin or end with a /. This essentially restricts you to only embedding files that are contained in the same directory as the source code which has the go:embed directive.
+*If a path is to a directory, then all files in that directory are recursively embedded, except for files with names that begin with . or _. To include all files, have to use prefix "go:embed "all:static".
+*The path separtor should always be a forward slash, even on Windows machines.
+*The embedded file system is always rooted in the directory which contains the go:embed directive. 
+
+Switch up application that it serves static CSS, JavaScript and image files from the embeddded file system - instead of reading them from the disk at runtime.
+
+update routes.go
+
+-Embedding HTML templates.
+
+*fs.Glob() returns a slice of filepaths matching a glob pattern. It's effectively the same as a the filepath.Glob() function that used earlier, except that it works on embedded filesystems.
+*Template.ParseFS() can be used to parse the HTML templates from an embedded filesystem into a template set. This is effectively a replacement for both the Template.ParseFiles() and Tempalate.Parse() methods. Template.ParseFiles() is also a variadic function, which allows you to parse multiple templates in a single call to ParseFiles().
+
+update cmd/web/templates.go file
+
+Now application is built into a binary it will contain all the UI files that it needs to run.
+
+Quickly building an executable binary in /tmp directory, copying over the TLS certificates and running the binary:
+
+" 
+  $ go build -o /tmp/web ./cmd/web
+  $ cp -r ./tls /tmp/
+  $ cd /tmp/
+  $ ./web
+"

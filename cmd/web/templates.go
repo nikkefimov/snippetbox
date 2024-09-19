@@ -2,8 +2,10 @@ package main
 
 import (
 	"html/template"
+	"io/fs"
 	"path/filepath"
 	"snippetbox/pkg/models"
+	"snippetbox/ui"
 	"time"
 )
 
@@ -31,12 +33,13 @@ var functions = template.FuncMap{
 }
 
 // Initialize a map which keeps cache.
-func newTemplateCache(dir string) (map[string]*template.Template, error) {
+func newTemplateCache() (map[string]*template.Template, error) {
 	cache := map[string]*template.Template{}
 
-	// Use the filepath.Glob() function to get a slice of all filepaths with '.page.tmpl',
-	// essentially will get a list of all the template files for the pages our application.
-	pages, err := filepath.Glob(filepath.Join(dir, "*page.tmpl"))
+	// Use fs.Glob() to het a slice of all filepaths in the ui.Fles embedded
+	// filesystem which match the pattern 'html/pages/*.html'. This essentially
+	// gives us a slice of all the 'page' templates for the application.
+	pages, err := fs.Glob(ui.Files, "html/*.tmpl")
 	if err != nil {
 		return nil, err
 	}
@@ -47,21 +50,16 @@ func newTemplateCache(dir string) (map[string]*template.Template, error) {
 		// and assign it to the name variable.
 		name := filepath.Base(page)
 
-		// Process the iterate template file.
-		ts, err := template.New(name).Funcs(functions).ParseFiles(page)
-		if err != nil {
-			return nil, err
+		// Create a slice containing the filepath patters for the templates we want to parse.
+		patterns := []string{
+			"html/base.layout.tmpl",
+			"html/*.tmpl",
+			page,
 		}
 
-		// Use method ParseGlob for adding all framework templates
-		// in our case it is only 'base.layout.tmpl' file.
-		ts, err = ts.ParseGlob(filepath.Join(dir, "*layout.tmpl"))
-		if err != nil {
-			return nil, err
-		}
-
-		// Use method ParseGlob to add all others templates.
-		ts, err = ts.ParseGlob(filepath.Join(dir, "*partial.tmpl"))
+		// Use ParseFS() instead of ParseFiles() to parse the template files
+		// from the ui.Files embedded filesystem.
+		ts, err := template.New(name).Funcs(functions).ParseFS(ui.Files, patterns...)
 		if err != nil {
 			return nil, err
 		}
