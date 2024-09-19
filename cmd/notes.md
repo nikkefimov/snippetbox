@@ -537,3 +537,16 @@ If there is not a value in the request contet with the isAuthenticatedContextKey
 
 When application is running, if log in as a certain user and browse around the application and if delete the record for the user which logged in from the database, application is now smart enough to recognize that the user has been deleted and after refrest the page, user now will find as a treated because unauthenticated (logged-out) user.
 
+<b>Some optional features</b>
+
+File embedding and generics.
+
+*File embedding makes it possible to embed external files into Go program itself.
+*Generics can help to reduce the amount of boilerplate code need to write, while retaiting compile-time type safety.
+
+-Using embedded files
+
+In version 1.16 was the embed package, which makes it possible to embed external files into Go program itself. This feature is really nice because it makes it possible to create and subsequently distribute Go programs that are completely self-contained and have everything that need to run as a aprt of the binary executable.
+
+create efs.go
+
