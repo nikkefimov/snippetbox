@@ -1,29 +1,35 @@
-22.07 finish with new loggers and start dependency injection
+-Loggers, dependency injection
+
+finish with new loggers and start dependency injection
 
 handlers.go function home() is still writing errors in standart logger GO
 working on it, have to change this to errorLog logger
 update home() and other handler functions in handler.go
 made mistake in file type "./ui/html/home.page.tmpl:" "changed to .bak" for testing new logger, tested - OK
 
-23.07 creat helpers.go move some code with error handling, and update handlers.go with new features helpers
+-Create helpers.go
+
+Move some code with error handling, and update handlers.go with new features helpers
 
 in handler serverError() was used func debug.Stack() for get trace from stack fo current goroutine and add it in logger,
 its good in a future work because there is full route and easy for fixing. In helper clientError() was used func http.StatusText() for automatic text generation about status HTTP, like a "Bad request". Was used special constants from net/http for code about status HTTP instead number msgs. In helper serverError() was used constant http.StatusInternalServerError instead 500, in helper notFound() was used constant http.StatusNotFound instead 404.
 Information about constants: "pkg.go.dev/net/http#pkg-constants"
 
-23.07 fix msg from helpers.go, fix serverError() use Output(), depth is 2 by default
+-Fix msg from helpers.go
 
-now have information about exact string in code in whole project with a problem, before had just information about string in helpers.go which says about problem is
+Fix serverError() use Output(), depth is 2 by default
 
-23.07 correction of a deliberate error earlier in type in file for the logger test and errors
+now have information about exact string in code in whole project with a problem, before had just information about exactly string in helpers.go which says about problem is
+
+-Correction of a deliberate error earlier in type in file for the logger test and errors
 
 mv ui/html/home.page.bak ui/html/home.page.tmpl. Tested - OK
 
-25.07 create new file routes.go and new method, move this part with routes from main.go
+-Create new file routes.go and new method, move this part with routes from main.go
 
 after small refactoring updated file main.go is doing: parsing runtime configuration settings for an application, making dependencies for handlers, starting http server.
 
-30.07 install homebrew in terminal, install Java JDK, install MySQL in terminal, launch MySQL trough brew
+-Install homebrew in terminal, install Java JDK, install MySQL in terminal, launch MySQL trough brew
 
 create new database "snippetbox", create new table "snippets", create tests notes, create new user for web with limited rights. Tested - OK.
 
@@ -34,12 +40,12 @@ file go.mod updated according with installed SQL driver
 file go.sum was created after install SQL driver, this file contains cryptographic checksums representing the contents of the required packages. Unlike the go.mod file, the go.sum file is not intended to be edited, and you should not normally opet it, much less edit it. This file accomplishes two useful taks: If you run the go mod veify command from a terminal, Go will check if the checksums of the of the dowloaded packages on your computer match the entries in go.sum, so you can be sure that they have not beed changed.
 If someone else need to dowload all the dependencies for the project by running the go mod dowload command, will get an error message if there is any mismatch between the dependencies being downloaded and the checksums in the file.
 
-2.08 Creat connections in MySQL, add sql.Open() func
+<b>Creat connections in MySQL, add sql.Open() func</b>
 
 Data source name for second parametr in sql.Open() func we can find github.com/go-sql-driver/mysql#dsn-data-source-name.
 File main.go was updated
 
-3.08 creat MySQL model for work with a database in project
+<b>Create MySQL model for work with a database in project</b>
 
 create new folder mysql and two new files .go in folder models and mysql
 
@@ -47,19 +53,19 @@ in file models.go we define types of top level data, which our database model wi
 
 file snippets.go contains code for work with notes with MySQL database, assign new type here SnippetModel
 
-7.08 update file snippets.go
+-Update file snippets.go
 
 edit method SnippetModel.Insert(), create new snippet in table snippets and return new snippet's id
 make SQL request and update code in snippets.go, use interface sql.Result which we get after execution DB.Exec(). 
 We have two methods from sql.Result, LastInsertId() and RowsAffected(), not all driver support these methods, PostgeSQL doesnt work with LastInsertId(), have to check driver's manual before use
 
-8.08 output snippet from the database by snippet's ID from the URL
+-Output snippet from the database by snippet's ID from the URL
 
 edit method GET in file snippets.go
 
-13.08 test display latest snippets from DB
+-Test display latest snippets from DB
 
-17.08 display content from MySQL into HTML template
+-Display content from MySQL into HTML template
 
 fix error with mainpage
 
@@ -80,7 +86,8 @@ work with operators and functions from Go template builder, was used {{define}},
 
 updated template files for main page, tested - OK
 
-17.08 template caching in Go
+<b>Template caching in Go</b>
+
 avoid processes the template files using the template.ParseFiles() function everytime when a webpage is displayed by processing the files once druing application startup and storing the processed templates in a cache in memory
 
 put a code which reapets in handlers home and showSnippet in helper function
@@ -590,3 +597,23 @@ Replace PermittedInt() with a generic PermittedValue() function in file validato
 Update snippetCreatePost handler in file handlers.go to use the new PermittedValue() function in the validation checks.
 
 In older versions of Go, if you wanted to check whether a []string slice and an []int slice contained a particular value you would need to write two separate functions - one function for the string type and another for the int. With generics its a possible to write a single contains() function that will work for string, int and all other comparable types.
+
+<b>Testing</b>
+
+*Create and run table-driven unit tests and sub-tests.
+*Unit test HTTP handlers and middleware.
+*Perform 'end-to-end' testing of web application routes, middleware and handlers.
+*Create mocks of database models and use them in unit tests.
+*Patter for testing CSRF-protected HTML form submissions.
+*Test instance of MySQL to perform integration tests.
+*Calculate and profile code coverage for tests.
+
+-Unit testing and sub-tests
+
+Unit test humanDate() function, create templates_test.go
+
+Basic pattern one that use for nearly all tests that write in Go:
+*Test is just regular Go code, which calls the humanDate() function and checks that the result matches what expect.
+*Unit tests are contained in a normal Go function with the signature func(*testing.T).
+*To be a valid unit test the name of function must begin with the word Test. Typically this is then followed by the name of the function, method or type that are testing to help make it obvious at a glance what is being tested.
+*Use the t.Errorf() function to mark a test as failed and log a decriptive message about the failure. It's important to note that calling t.Errorf() doesn't stop execution of test - after call it Go will continue executing any remaining test code as normal.
