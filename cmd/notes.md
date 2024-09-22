@@ -617,3 +617,22 @@ Basic pattern one that use for nearly all tests that write in Go:
 *Unit tests are contained in a normal Go function with the signature func(*testing.T).
 *To be a valid unit test the name of function must begin with the word Test. Typically this is then followed by the name of the function, method or type that are testing to help make it obvious at a glance what is being tested.
 *Use the t.Errorf() function to mark a test as failed and log a decriptive message about the failure. It's important to note that calling t.Errorf() doesn't stop execution of test - after call it Go will continue executing any remaining test code as normal.
+
+-Table-driven tests.
+
+In Go, way to run multiple test cases is to use table-driven tests.
+
+Expand TestHumanDate() function to cover some additional test cases:
+
+*If the input to humanDate() is the zero time, then it returns the empty string "".
+*The output from the humanDate() function always uses the UTC time zone.
+
+update templayes_test.go
+
+The individual output for each of our sub-test. First test case passed, but the Empty and CET test both failed.
+
+Fix these two cases in templates.go file, function humanDate().
+
+In the third test was used CET (Central European Time) as the time zone, which is one hour ahead of UTC. So the output from humanDate() (in UTC) to be 20 Sep 2024 at 11:00, not 20 Sep 2024 at 12:00.
+
+
