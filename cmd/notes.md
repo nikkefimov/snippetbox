@@ -635,4 +635,16 @@ Fix these two cases in templates.go file, function humanDate().
 
 In the third test was used CET (Central European Time) as the time zone, which is one hour ahead of UTC. So the output from humanDate() (in UTC) to be 20 Sep 2024 at 11:00, not 20 Sep 2024 at 12:00.
 
+-Helper for test assertions.
+
+create assert.go
+
+func Equal() is a generic function, meant that be able to use it irrespective of what the type of the actual and expected values is. So long as both actual and expected have the same type (for example, both string values or both int values).
+
+t.Helper() function using in the code above indicates to he Go test runner that our Equal() function is a test helper. This means that when t.Errorf() is called from our Equal() function, the Go test runner will report the filename and line number of the code which called Equal() function in the ouput.
+
+update templates_test.go
+
+Important point, that dont need to use sub-tests in conjunction with table-driven tests. It's perfectly valid to execute sub-tests by calling t.Run() consecutively in your test functions.
+
 
