@@ -4,7 +4,7 @@ It's a full-stack CRUD application entirely written in Go. Through this app you 
 
 ### Features
 
-- RESTful routing.
+- RESTful routing by "HttpRouter".
 - Catching runtime errors.
 - HTML templating with Go.
 - Caching templates.
